@@ -1,12 +1,13 @@
-Projet: BoilerPlate hono/react
+# Projet: BoilerPlate hono/react
+
 Milestone: Cycle 24 (2025-10-26 → 2025-11-02)
 
 Features
 
-[ ] Création du repo git
+[X] Création du repo git
 (Aucune description)
 
-[ ] Ajout des tools
+[X] Ajout des tools
 On ajoute ESlint, prettier, husky, lint-staged, zustand, i18next, react scan
 
 [ ] Ci/CD
@@ -30,4 +31,4 @@ Prochaines tâches
 
 Journal
 
-2025-10-29 - Cycle 24 - aucune feature terminée
+2025-10-29 - Cycle 24 - 2 features terminées (Création du repo git, Ajout des tools)
