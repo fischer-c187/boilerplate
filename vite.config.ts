@@ -11,7 +11,7 @@ const ssrBuild = {
   copyPublicDir: false,
   emptyOutDir: false,
   rollupOptions: {
-    input: resolve(__dirname, 'src/entry-server.tsx'),
+    input: resolve(__dirname, 'src/front/entry-server.tsx'),
     output: {
       entryFileNames: 'index.js',
       chunkFileNames: 'assets/[name]-[hash].js',
@@ -26,7 +26,7 @@ const clientBuild = {
   copyPublicDir: true,
   emptyOutDir: true,
   rollupOptions: {
-    input: resolve(__dirname, 'src/entry-client.tsx'),
+    input: resolve(__dirname, 'src/front/entry-client.tsx'),
     output: {
       entryFileNames: 'assets/[name].js',
       chunkFileNames: 'assets/[name]-[hash].js',
@@ -38,11 +38,15 @@ const clientBuild = {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
-    tanstackRouter({ autoCodeSplitting: true }),
+    tanstackRouter({
+      autoCodeSplitting: true,
+      routesDirectory: 'src/front/routes',
+      generatedRouteTree: 'src/front/routeTree.gen.ts',
+    }),
     react(),
     tailwindcss(),
     devServer({
-      entry: 'src/entry-server.tsx',
+      entry: 'src/front/entry-server.tsx',
       injectClientScript: false,
       exclude: [
         /^\/src\/.+/, // Allow Vite to handle /src/ requests
