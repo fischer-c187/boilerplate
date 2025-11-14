@@ -1,0 +1,62 @@
+# Cursor Rules
+
+## Commit Message Guidelines
+
+When generating commit messages, follow these rules strictly:
+
+### Format
+```
+<type>(<scope>): <subject>
+
+[optional body]
+```
+
+### Rules
+1. **Type** (required): Must be one of:
+   - `feat`: New feature
+   - `fix`: Bug fix
+   - `docs`: Documentation only
+   - `style`: Code style (formatting, missing semicolons, etc.)
+   - `refactor`: Code change that neither fixes a bug nor adds a feature
+   - `perf`: Performance improvement
+   - `test`: Adding or updating tests
+   - `chore`: Maintenance tasks (dependencies, config, etc.)
+   - `ci`: CI/CD changes
+   - `build`: Build system changes
+
+2. **Scope** (optional): Module or area affected (e.g., `auth`, `database`, `payments`, `ui`)
+
+3. **Subject** (required):
+   - Maximum 50 characters
+   - Lowercase first letter
+   - No period at the end
+   - Imperative mood ("add" not "added" or "adds")
+   - Clear and concise
+
+4. **Body** (optional):
+   - Only if additional context is needed
+   - Wrap at 72 characters
+   - Explain what and why, not how
+
+### Examples
+```
+feat(auth): add social login with Google
+fix(payments): handle webhook retry logic
+refactor(database): simplify user query interface
+docs: update deployment instructions
+chore(deps): upgrade hono to v4.2.0
+```
+
+### Anti-patterns (avoid)
+```
+❌ Added new feature for users
+❌ fix: Fixed the bug in the authentication module that was causing issues
+❌ Update stuff
+❌ WIP
+❌ feat: implement comprehensive user authentication system with OAuth2, JWT tokens, and session management
+```
+
+### Additional Notes
+- Keep commits atomic (one logical change per commit)
+- If the subject exceeds 50 chars, you're probably doing too much in one commit
+- Breaking changes: Add `BREAKING CHANGE:` in body or append `!` after type/scope
