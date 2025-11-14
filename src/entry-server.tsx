@@ -11,6 +11,7 @@ import { compress } from 'hono/compress'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { secureHeaders } from 'hono/secure-headers'
+import testApi from './api/test/test.ts'
 import { createRouter } from './router.tsx'
 
 const port = process.env.NODE_SERVER_PORT ? Number.parseInt(process.env.NODE_SERVER_PORT, 10) : 3000
@@ -33,10 +34,11 @@ app.use(
   })
 )
 // Setup API routes
-// app.route('/api', apiHandler)
+app.route('/api', testApi)
 
 // app.get('/test', testHandler)
 
+// Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   app.use(compress())
 
@@ -48,6 +50,7 @@ if (process.env.NODE_ENV === 'production') {
   )
 }
 
+// Handle all other requests with TanStack Router
 app.use('*', async (c) => {
   const handler = createRequestHandler({
     request: c.req.raw,
@@ -71,7 +74,7 @@ app.use('*', async (c) => {
   })
 })
 
-// Start server in both development and production
+// Serve the app in production
 if (process.env.NODE_ENV === 'production') {
   serve(
     {
