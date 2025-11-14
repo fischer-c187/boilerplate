@@ -27,4 +27,9 @@ lerna-debug.log*
 # misc
 .DS_Store
 
+# build
 /dist
+
+# TanStack Router generated files
+.tanstack/
+**/routeTree.gen.ts
