@@ -1,6 +1,6 @@
 import { RouterClient } from '@tanstack/react-router/ssr/client'
 import { hydrateRoot } from 'react-dom/client'
-import { createRouter } from './router.tsx'
+import { createRouter } from './router.ts'
 
 const router = createRouter()
 
