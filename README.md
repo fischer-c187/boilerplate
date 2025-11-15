@@ -47,10 +47,34 @@ Ouvre http://localhost:3000
 
 ## Commands
 
+### Development
+
 ```bash
 pnpm dev      # Dev mode avec hot reload
 pnpm build    # Build pour production
 pnpm start    # Run production build
+```
+
+### Database
+
+```bash
+# Démarrer PostgreSQL avec Docker
+docker compose up -d
+
+# Arrêter PostgreSQL
+docker compose down
+
+# Arrêter et supprimer les données
+docker compose down -v
+
+# Voir les logs de la base de données
+docker compose logs -f postgres
+```
+
+**Connection string** (dans `.env.dev`):
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boilerplate_dev
 ```
 
 ## Architecture
