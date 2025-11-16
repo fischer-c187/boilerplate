@@ -59,23 +59,27 @@ pnpm start    # Run production build
 
 ```bash
 # Démarrer PostgreSQL avec Docker
-docker compose up -d
+pnpm db:up
 
 # Arrêter PostgreSQL
-docker compose down
+pnpm db:down
 
-# Arrêter et supprimer les données
-docker compose down -v
+# Générer les migrations à partir des schémas
+pnpm db:generate
 
-# Voir les logs de la base de données
-docker compose logs -f postgres
+# Appliquer les migrations sur la base de données
+pnpm db:migrate
+
+# Lancer Drizzle Studio (GUI pour explorer la DB)
+pnpm db:studio
 ```
 
-**Connection string** (dans `.env.dev`):
+**Workflow de migration** :
 
-```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/boilerplate_dev
-```
+1. Créer/modifier un schéma dans `src/server/db/schema/`
+2. Générer la migration : `pnpm db:generate`
+3. Appliquer la migration : `pnpm db:migrate`
+4. Explorer avec Drizzle Studio : `pnpm db:studio`
 
 ## Architecture
 
