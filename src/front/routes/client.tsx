@@ -1,3 +1,4 @@
+import { authClient } from '@/shared/api-client/auth/auth.api'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/client')({
@@ -6,9 +7,15 @@ export const Route = createFileRoute('/client')({
 })
 
 function NoSSR() {
-  // const session = authClient.getSession()
+  const session = authClient.useSession()
 
-  // console.log(session)
+  if (session.isPending) {
+    return <div>Loading...</div>
+  }
+  if (session.error) {
+    return <div>Error: {session.error.message}</div>
+  }
+  console.log(session)
 
   return (
     <div className="flex flex-col items-center justify-center h-screen h-4xl bg-red-500">
