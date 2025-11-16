@@ -1,3 +1,4 @@
+import auth from '@/server/api/auth'
 import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import {
@@ -34,9 +35,11 @@ app.use(
   })
 )
 // Setup API routes
-app.route('/api', testApi)
+const routes = [testApi, auth]
 
-// app.get('/test', testHandler)
+routes.forEach((route) => {
+  app.basePath('/api').route('/', route)
+})
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
