@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 
-const testApi = new Hono()
+const router = new Hono()
 
-testApi.get('/test', (c) => {
+router.get('/test', (c) => {
   return c.json({ message: 'Hello, world!' })
 })
 
-export default testApi
+export default router
