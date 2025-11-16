@@ -14,9 +14,42 @@ Cette séparation garantit un code clair, robuste et évolutif, tout en permetta
 
 ```
 src/
-  server/      ← Backend Hono (API REST, DB, sécurité)
-  front/       ← Front React (SSR + hydratation + routing)
-  shared/      ← Code commun isomorphique (types, services, API client)
+  server/                ← backend strict
+    api/
+      user.ts
+      auth.ts
+      posts.ts
+    db/
+    middlewares/
+    index.ts
+    router.ts
+
+  front/                 ← logique React (SSR + client)
+    routes/              ← TanStack Router
+      index.tsx
+      user/
+        profile.tsx
+    components/
+    features/            ← UI + hooks UI (jamais de logique métier ici)
+    layouts/
+    entry-client.tsx     ← hydrateRoot (client)
+    entry-server.tsx     ← SSR entry
+
+  shared/                ← code utilisé par front ET server
+    domain/
+      user/
+        user.schema.ts
+        user.types.ts
+    services/
+      user/
+        getUser.ts
+        updateUser.ts
+    api-client/          ← React Query + Hono client
+      user.query.ts
+    utils/
+      dates.ts
+      format.ts
+
 ```
 
 Chaque dossier a des responsabilités strictes.

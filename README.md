@@ -47,11 +47,39 @@ Ouvre http://localhost:3000
 
 ## Commands
 
+### Development
+
 ```bash
 pnpm dev      # Dev mode avec hot reload
 pnpm build    # Build pour production
 pnpm start    # Run production build
 ```
+
+### Database
+
+```bash
+# Démarrer PostgreSQL avec Docker
+pnpm db:up
+
+# Arrêter PostgreSQL
+pnpm db:down
+
+# Générer les migrations à partir des schémas
+pnpm db:generate
+
+# Appliquer les migrations sur la base de données
+pnpm db:migrate
+
+# Lancer Drizzle Studio (GUI pour explorer la DB)
+pnpm db:studio
+```
+
+**Workflow de migration** :
+
+1. Créer/modifier un schéma dans `src/server/db/schema/`
+2. Générer la migration : `pnpm db:generate`
+3. Appliquer la migration : `pnpm db:migrate`
+4. Explorer avec Drizzle Studio : `pnpm db:studio`
 
 ## Architecture
 
