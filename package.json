@@ -25,6 +25,7 @@
     "@tanstack/react-router": "^1.135.0",
     "@tanstack/react-router-devtools": "^1.135.0",
     "@tanstack/router-plugin": "^1.135.0",
+    "@tanstack/zod-adapter": "^1.136.8",
     "better-auth": "^1.3.34",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
@@ -34,6 +35,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-i18next": "^16.2.1",
+    "zod": "^4.1.12",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
