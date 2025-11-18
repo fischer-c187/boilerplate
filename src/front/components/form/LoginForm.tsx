@@ -2,7 +2,7 @@ import { authClient } from '@/shared/api-client/auth/auth.api'
 import { useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
-export function LoginForm() {
+export function LoginForm({ redirectTo = '/' }: { redirectTo?: string }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -23,8 +23,7 @@ export function LoginForm() {
       if (result.error) {
         setError(result.error.message || 'Login failed')
       } else {
-        // Navigate using TanStack Router
-        await navigate({ to: '/client' })
+        await navigate({ to: redirectTo })
       }
     } catch (err) {
       setError('An error occurred during login')

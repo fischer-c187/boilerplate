@@ -1,33 +1,15 @@
-import { authClient } from '@/shared/api-client/auth/auth.api'
-import { createFileRoute, Navigate } from '@tanstack/react-router'
+import { createFileRoute, useRouteContext } from '@tanstack/react-router'
+import type { User } from 'better-auth'
 
-export const Route = createFileRoute('/secret')({
+export const Route = createFileRoute('/_auth/secret')({
   component: SecretPage,
-  ssr: false,
-  beforeLoad: () => {
-    console.log('beforeLoad')
-  },
+  ssr: true,
 })
 
 function SecretPage() {
-  const session = authClient.useSession()
+  const { session } = useRouteContext({ from: '/_auth' })
 
-  // Show loading state while checking authentication
-  if (session.isPending) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking authentication...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Redirect to login if not authenticated
-  if (!session.data?.user) {
-    return <Navigate to="/login" />
-  }
+  const user = session?.user as User | null
 
   // Show secret content for authenticated users
   return (
@@ -40,7 +22,7 @@ function SecretPage() {
 
         <div className="bg-blue-50 border-l-4 border-blue-600 p-6 mb-6">
           <h2 className="text-xl font-semibold text-blue-900 mb-2">
-            Welcome, {session.data.user.name || session.data.user.email}!
+            Welcome, {user?.name || user?.email}!
           </h2>
           <p className="text-blue-800">
             You have successfully accessed the secret area. Only authenticated users can see this
@@ -53,15 +35,15 @@ function SecretPage() {
             <h3 className="font-semibold text-gray-700 mb-2">User Information</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>
-                <span className="font-medium">Email:</span> {session.data.user.email}
+                <span className="font-medium">Email:</span> {user?.email}
               </li>
-              {session.data.user.name && (
+              {user?.name && (
                 <li>
-                  <span className="font-medium">Name:</span> {session.data.user.name}
+                  <span className="font-medium">Name:</span> {user.name}
                 </li>
               )}
               <li>
-                <span className="font-medium">User ID:</span> {session.data.user.id}
+                <span className="font-medium">User ID:</span> {user?.id}
               </li>
             </ul>
           </div>
