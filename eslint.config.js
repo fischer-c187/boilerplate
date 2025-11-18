@@ -36,6 +36,7 @@ export default tseslint.config(
           varsIgnorePattern: '^_',
         },
       ],
+      '@typescript-eslint/only-throw-error': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/consistent-type-imports': 'error',
       ...reactHooks.configs.recommended.rules,
@@ -43,6 +44,6 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', '*.config.js', '*.config.ts'],
+    ignores: ['dist/', 'node_modules/', '*.config.js', '*.config.ts', 'docker/'],
   }
 )

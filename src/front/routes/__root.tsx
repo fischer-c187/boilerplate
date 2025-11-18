@@ -43,7 +43,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         : []),
       {
         type: 'module',
-        src: import.meta.env.PROD ? '/assets/entry-client.js' : '/src/entry-client.tsx',
+        src: import.meta.env.PROD ? '/assets/entry-client.js' : '/src/front/entry-client.tsx',
       },
     ],
   }),

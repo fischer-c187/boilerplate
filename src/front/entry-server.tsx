@@ -1,3 +1,4 @@
+import auth from '@/server/api/auth'
 import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import {
@@ -11,7 +12,7 @@ import { compress } from 'hono/compress'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { secureHeaders } from 'hono/secure-headers'
-import testApi from '../server/api/test/test.ts'
+import testApi from '../server/api/test.ts'
 import { createRouter } from './router.ts'
 
 const port = process.env.NODE_SERVER_PORT ? Number.parseInt(process.env.NODE_SERVER_PORT, 10) : 3000
@@ -34,9 +35,11 @@ app.use(
   })
 )
 // Setup API routes
-app.route('/api', testApi)
+const routes = [testApi, auth]
 
-// app.get('/test', testHandler)
+routes.forEach((route) => {
+  app.basePath('/api').route('/', route)
+})
 
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
