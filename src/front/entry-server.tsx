@@ -12,6 +12,7 @@ import { compress } from 'hono/compress'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { secureHeaders } from 'hono/secure-headers'
+import mailApi from '../server/api/mail.ts'
 import testApi from '../server/api/test.ts'
 import { createRouter } from './router.ts'
 
@@ -35,7 +36,7 @@ app.use(
   })
 )
 // Setup API routes
-const routes = [testApi, auth]
+const routes = [testApi, auth, mailApi]
 
 routes.forEach((route) => {
   app.basePath('/api').route('/', route)
