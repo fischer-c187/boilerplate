@@ -1,19 +1,33 @@
 import { createFileRoute, useRouteContext } from '@tanstack/react-router'
 import type { User } from 'better-auth'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/_auth/secret')({
   component: SecretPage,
-  ssr: true,
+  ssr: false,
 })
 
 function SecretPage() {
   const { session } = useRouteContext({ from: '/_auth' })
-
+  const [loading, setLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
   const user = session?.user as User | null
+
+  const handleSendEmail = async () => {
+    setLoading(true)
+    const res = await fetch('/api/mail/test')
+    if (!res.ok) {
+      throw new Error('Failed to send email')
+    }
+    const data = (await res.json()) as { message: string }
+    console.log(data)
+    setEmailSent(true)
+    setLoading(false)
+  }
 
   // Show secret content for authenticated users
   return (
-    <div className="min-h-screen bg-linear-to-br from-purple-600 to-blue-600 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-lg shadow-2xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">🔒 Secret Page</h1>
@@ -56,6 +70,15 @@ function SecretPage() {
             </p>
           </div>
         </div>
+        {
+          <button
+            disabled={loading}
+            onClick={() => void handleSendEmail()}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          >
+            {emailSent ? 'Email Sent' : 'Send Email'}
+          </button>
+        }
       </div>
     </div>
   )

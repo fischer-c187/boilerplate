@@ -15,7 +15,6 @@ function NoSSR() {
   if (session.error) {
     return <div>Error: {session.error.message}</div>
   }
-  console.log(session)
 
   return (
     <div className="flex flex-col items-center justify-center h-screen h-4xl bg-red-500">
