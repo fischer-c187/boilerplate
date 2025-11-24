@@ -1,5 +1,5 @@
+import { auth } from '@/server/services/auth/auth'
 import { Hono } from 'hono'
-import { auth } from '../auth/auth'
 
 const router = new Hono({
   strict: false,
