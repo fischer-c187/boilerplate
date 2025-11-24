@@ -11,7 +11,7 @@ const ssrBuild = {
   copyPublicDir: false,
   emptyOutDir: false,
   rollupOptions: {
-    input: resolve(__dirname, 'src/front/entry-server.tsx'),
+    input: resolve(__dirname, 'src/server/index.ts'),
     output: {
       entryFileNames: 'index.js',
       chunkFileNames: 'assets/[name]-[hash].js',
@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     tailwindcss(),
     devServer({
-      entry: 'src/front/entry-server.tsx',
+      entry: 'src/server/index.ts',
       injectClientScript: false,
       exclude: [
         /^\/src\/.+/, // Allow Vite to handle /src/ requests
