@@ -1,3 +1,4 @@
+import { client } from '@/shared/api-client/client'
 import { createFileRoute, useRouteContext } from '@tanstack/react-router'
 import type { User } from 'better-auth'
 import { useState } from 'react'
@@ -15,14 +16,19 @@ function SecretPage() {
 
   const handleSendEmail = async () => {
     setLoading(true)
-    const res = await fetch('/api/mail/test')
-    if (!res.ok) {
-      throw new Error('Failed to send email')
+    try {
+      const res = await client.mail.test.$get()
+      if (!res.ok) {
+        throw new Error('Failed to send email')
+      }
+      const data = (await res.json()) as { message: string }
+      console.log(data)
+      setEmailSent(true)
+    } catch (error: unknown) {
+      console.error('Error sending email:', error)
+    } finally {
+      setLoading(false)
     }
-    const data = (await res.json()) as { message: string }
-    console.log(data)
-    setEmailSent(true)
-    setLoading(false)
   }
 
   // Show secret content for authenticated users
