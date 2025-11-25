@@ -24,7 +24,7 @@ const parsed = serverEnvSchema.safeParse(process.env)
 
 if (!parsed.success) {
   console.error('❌ Invalid SERVER environment variables:')
-  console.error(parsed.error.flatten().fieldErrors)
+  console.error(z.prettifyError(parsed.error))
   process.exit(1)
 }
 

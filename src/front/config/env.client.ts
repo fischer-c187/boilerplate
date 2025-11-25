@@ -10,7 +10,7 @@ const parsed = clientEnvSchema.safeParse(import.meta.env)
 
 if (!parsed.success) {
   console.error('❌ Invalid CLIENT environment variables:')
-  console.error(parsed.error.flatten().fieldErrors)
+  console.error(z.prettifyError(parsed.error))
   throw new Error('Invalid client environment')
 }
 
