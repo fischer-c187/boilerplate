@@ -1,16 +1,26 @@
+import { testQueryOptions, useGetTest } from '@/front/api/example.query'
 import Counter from '@/front/components/Counter'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
+  // ✅ Loader : Pre-fetch les données côté serveur
+  loader: ({ context }) => {
+    return context.queryClient.ensureQueryData(testQueryOptions)
+  },
   component: App,
 })
 
 function App() {
+  // ✅ useSuspenseQuery : data est garanti (pas de undefined possible)
+  const { data } = useGetTest()
+
+  console.log(data.message)
   return (
     <div className="text-center">
       <header className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white text-[calc(10px+2vmin)]">
         <h1 className="text-4xl font-bold mb-6 text-red-500">Welcome to TanStack + Hono</h1>
         <h2>SSR page</h2>
+        <p>{data.message}</p>
         <p className="max-w-2xl mx-auto mb-8 text-lg leading-relaxed">
           Edit <code className="bg-gray-800 px-2 py-1 rounded">src/routes/index.tsx</code> and save
           to reload. Built with{' '}
