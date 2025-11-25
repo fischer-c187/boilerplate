@@ -31,6 +31,16 @@ const clientBuild = {
       entryFileNames: 'assets/[name].js',
       chunkFileNames: 'assets/[name]-[hash].js',
       assetFileNames: 'assets/[name]-[hash][extname]',
+      manualChunks: {
+        // React core
+        'vendor-react': ['react', 'react-dom'],
+        // TanStack ecosystem
+        'vendor-tanstack': ['@tanstack/react-query', '@tanstack/react-router'],
+        // i18n
+        'vendor-i18n': ['i18next', 'react-i18next'],
+        // Validation
+        'vendor-zod': ['zod'],
+      },
     },
   },
   manifest: true,
