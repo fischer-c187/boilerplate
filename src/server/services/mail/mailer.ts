@@ -1,12 +1,13 @@
+import { env } from '@/server/config/env'
 import { localTransport } from './transports/local'
 import type { Mailer, Provider } from './types'
 
 function createMailer(): Mailer {
-  if (process.env.NODE_ENV === 'development') {
+  if (env.NODE_ENV === 'development') {
     return localTransport()
   }
 
-  const provider = process.env.MAIL_PROVIDER as Provider
+  const provider = env.MAIL_PROVIDER as Provider
 
   if (!provider) {
     throw new Error('MAIL_PROVIDER is not set')
