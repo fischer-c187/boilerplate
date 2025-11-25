@@ -1,4 +1,5 @@
 import Header from '@/front/components/Header'
+import { clientEnv } from '@/front/config/env.client'
 import appCss from '@/front/index.css?url'
 import type { RouterContext } from '@/front/router'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
@@ -25,7 +26,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
     ],
     scripts: [
-      ...(!import.meta.env.PROD
+      ...(!clientEnv.PROD
         ? [
             {
               type: 'module',
@@ -43,10 +44,21 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         : []),
       {
         type: 'module',
-        src: import.meta.env.PROD ? '/assets/entry-client.js' : '/src/front/entry-client.tsx',
+        src: clientEnv.PROD ? '/assets/entry-client.js' : '/src/front/entry-client.tsx',
       },
     ],
   }),
+  notFoundComponent: () => (
+    <html lang="en">
+      <body>
+        <div className="min-h-screen flex items-center justify-center bg-red-50">
+          <div className="text-center p-8">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Page not found</h1>
+          </div>
+        </div>
+      </body>
+    </html>
+  ),
   errorComponent: ({ error }) => (
     <html lang="en">
       <head>
