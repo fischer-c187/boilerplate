@@ -12,15 +12,7 @@ const ssrRoute = new Hono()
 ssrRoute.use('*', async (c) => {
   const handler = createRequestHandler({
     request: c.req.raw,
-    createRouter: () => {
-      const router = createRouter()
-      router.update({
-        context: {
-          ...router.options.context,
-        },
-      })
-      return router
-    },
+    createRouter,
   })
 
   return await handler(({ responseHeaders, router }) => {
