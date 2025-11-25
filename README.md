@@ -81,49 +81,93 @@ pnpm db:studio
 3. Appliquer la migration : `pnpm db:migrate`
 4. Explorer avec Drizzle Studio : `pnpm db:studio`
 
+### Environment Variables
+
+Ce boilerplate utilise **Zod** pour valider les variables d'environnement au démarrage. Cela garantit que l'application ne démarre pas avec une configuration invalide ou manquante.
+
+**Workflow pour ajouter une variable d'environnement :**
+
+1. Ajouter la variable dans `.env`
+2. Ajouter la validation dans le schema Zod correspondant :
+   - **Variable serveur** → `src/server/config/env.ts`
+   - **Variable client** → `src/front/config/env.client.ts`
+
+# Exemple : Ajouter une clé API Stripe
+
+# 1. Dans .env
+
+STRIPE_SECRET_KEY=sk_test_xxx
+
+# 2. Dans src/server/config/env.ts
+
+const serverEnvSchema = z.object({
+// ... existing vars ...
+STRIPE*SECRET_KEY: z.string().startsWith('sk*'),
+})**Variables client vs serveur :**
+
+| Type    | Préfixe | Fichier schema                   | Accessible depuis         |
+| ------- | ------- | -------------------------------- | ------------------------- |
+| Serveur | aucun   | `src/server/config/env.ts`       | `env.VAR_NAME`            |
+| Client  | `VITE_` | `src/front/config/env.client.ts` | `clientEnv.VITE_VAR_NAME` |
+
+> ⚠️ **Important** : Les variables client (préfixées `VITE_`) sont exposées dans le bundle JavaScript. Ne jamais y mettre de secrets !
+
+**Utilisation :**
+
+// Côté serveur
+import { env } from '@/server/config/env'
+console.log(env.DB_HOST)
+
+// Côté client
+import { clientEnv } from '@/front/config/env.client'
+console.log(clientEnv.VITE_APP_NAME)
+
+```
+
 ## Architecture
 
 ```
+
 src/
-  server/                    # Backend Hono (Node.js only)
-    api/
-      users.ts               # API routes + handlers
-      auth.ts
-      payments.ts
-    db/
-      client.ts              # Drizzle config
-      schema/                # Table definitions
-        users.ts
-        payments.ts
-    middlewares/
-      auth.middleware.ts
-    index.ts                 # Hono app entry
+server/ # Backend Hono (Node.js only)
+api/
+users.ts # API routes + handlers
+auth.ts
+payments.ts
+db/
+client.ts # Drizzle config
+schema/ # Table definitions
+users.ts
+payments.ts
+middlewares/
+auth.middleware.ts
+index.ts # Hono app entry
 
-  front/                     # Frontend React (Browser + SSR)
-    routes/                  # TanStack Router routes
-      __root.tsx
-      index.tsx
-      users/
-        profile.tsx
-    components/
-      ui/                    # Design system
-      users/                 # User components
-      payments/              # Payment components
-    api/                     # React Query hooks
-      users.query.ts
-    hooks/                   # Custom hooks
-    layouts/
-    entry-server.tsx
-    entry-client.tsx
+front/ # Frontend React (Browser + SSR)
+routes/ # TanStack Router routes
+\_\_root.tsx
+index.tsx
+users/
+profile.tsx
+components/
+ui/ # Design system
+users/ # User components
+payments/ # Payment components
+api/ # React Query hooks
+users.query.ts
+hooks/ # Custom hooks
+layouts/
+entry-server.tsx
+entry-client.tsx
 
-  shared/                    # Code isomorphique (SSR + Client)
-    domain/                  # Types + Validation
-      users/
-        user.types.ts        # TypeScript interfaces
-        user.schema.ts       # Zod schemas
-      payments/
-        payment.types.ts
-        payment.schema.ts
+shared/ # Code isomorphique (SSR + Client)
+domain/ # Types + Validation
+users/
+user.types.ts # TypeScript interfaces
+user.schema.ts # Zod schemas
+payments/
+payment.types.ts
+payment.schema.ts
 
     services/                # Business logic pure
       users/
@@ -139,22 +183,25 @@ src/
 
     utils/
     constants/
+
 ```
 
 ## Règles d'import
 
 ```
+
 ✅ Autorisé :
-server/   → shared/
-front/    → shared/
-shared/   → shared/
+server/ → shared/
+front/ → shared/
+shared/ → shared/
 
 ❌ Interdit :
-server/   → front/   (backend ne peut pas importer React)
-front/    → server/  (frontend ne peut pas importer Node.js)
-shared/   → server/  (isomorphique ne peut pas dépendre de Node.js)
-shared/   → front/   (isomorphique ne peut pas dépendre de React)
-```
+server/ → front/ (backend ne peut pas importer React)
+front/ → server/ (frontend ne peut pas importer Node.js)
+shared/ → server/ (isomorphique ne peut pas dépendre de Node.js)
+shared/ → front/ (isomorphique ne peut pas dépendre de React)
+
+````
 
 ## Workflow typique
 
@@ -175,7 +222,7 @@ export const createUserSchema = z.object({
   email: z.string().email(),
   name: z.string().min(2),
 })
-```
+````
 
 ### 2. Créer l'API backend (server)
 
