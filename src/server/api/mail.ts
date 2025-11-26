@@ -1,4 +1,4 @@
-import { mailer } from '@/server/services/mail/mailer'
+import { mailer } from '@/server/adaptaters/mail/mailer'
 import { Hono } from 'hono'
 
 const router = new Hono().get('/mail/test', async (c) => {
