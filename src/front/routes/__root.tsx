@@ -2,9 +2,11 @@ import Header from '@/front/components/Header'
 import { clientEnv } from '@/front/config/env.client'
 import appCss from '@/front/index.css?url'
 import type { RouterContext } from '@/front/router'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
+import { I18nextProvider } from 'react-i18next'
 import { scan } from 'react-scan'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -48,60 +50,81 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
     ],
   }),
-  notFoundComponent: () => (
-    <html lang="en">
-      <body>
-        <div className="min-h-screen flex items-center justify-center bg-red-50">
-          <div className="text-center p-8">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Page not found</h1>
-          </div>
-        </div>
-      </body>
-    </html>
-  ),
-  errorComponent: ({ error }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <div className="min-h-screen flex items-center justify-center bg-red-50">
-          <div className="text-center p-8">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
-            <p className="text-gray-600 mb-4">{error?.message || 'An unexpected error occurred'}</p>
-            <button
-              type="button"
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              onClick={() => window.location.reload()}
-            >
-              Reload Page
-            </button>
-          </div>
-        </div>
-      </body>
-    </html>
-  ),
+  notFoundComponent: NotFoundPage,
+  errorComponent: ErrorPage,
   component: RootComponent,
 })
 
+function NotFoundPage() {
+  const { i18n } = Route.useRouteContext()
+  return (
+    <I18nextProvider i18n={i18n}>
+      <html lang={i18n.language}>
+        <body>
+          <div className="min-h-screen flex items-center justify-center bg-red-50">
+            <div className="text-center p-8">
+              <h1 className="text-2xl font-bold text-red-600 mb-4">Page not found</h1>
+            </div>
+          </div>
+        </body>
+      </html>
+    </I18nextProvider>
+  )
+}
+
+function ErrorPage({ error }: { error?: Error }) {
+  const { i18n } = Route.useRouteContext()
+  return (
+    <I18nextProvider i18n={i18n}>
+      <html lang={i18n.language}>
+        <head>
+          <HeadContent />
+        </head>
+        <body>
+          <div className="min-h-screen flex items-center justify-center bg-red-50">
+            <div className="text-center p-8">
+              <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
+              <p className="text-gray-600 mb-4">
+                {error?.message || 'An unexpected error occurred'}
+              </p>
+              <button
+                type="button"
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                onClick={() => window.location.reload()}
+              >
+                Reload Page
+              </button>
+            </div>
+          </div>
+        </body>
+      </html>
+    </I18nextProvider>
+  )
+}
+
 function RootComponent() {
+  const { i18n } = Route.useRouteContext()
+
   useEffect(() => {
-    // Make sure to run this only after hydration
     scan({
       enabled: true,
     })
   }, [])
+
   return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <Header />
-        <Outlet />
-        <TanStackRouterDevtools position="bottom-right" />
-        <Scripts />
-      </body>
-    </html>
+    <I18nextProvider i18n={i18n}>
+      <html lang={i18n.language}>
+        <head>
+          <HeadContent />
+        </head>
+        <body>
+          <Header />
+          <Outlet />
+          <TanStackRouterDevtools position="bottom-right" />
+          <ReactQueryDevtools />
+          <Scripts />
+        </body>
+      </html>
+    </I18nextProvider>
   )
 }
