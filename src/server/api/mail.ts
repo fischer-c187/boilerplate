@@ -1,9 +1,7 @@
+import { mailer } from '@/server/adaptaters/mail/mailer'
 import { Hono } from 'hono'
-import { mailer } from '../mail/mailer'
 
-const router = new Hono()
-
-router.get('/mail/test', async (c) => {
+const router = new Hono().get('/mail/test', async (c) => {
   try {
     await mailer.sendEmail({ to: 'test@test.com', subject: 'Test', html: '<p>Hello, world!</p>' })
     return c.json({ message: 'Email sent' })

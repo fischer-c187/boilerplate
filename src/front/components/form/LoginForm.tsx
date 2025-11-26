@@ -1,5 +1,5 @@
 import { authClient } from '@/shared/api-client/auth/auth.api'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 
 export function LoginForm({ redirectTo = '/' }: { redirectTo?: string }) {
@@ -84,9 +84,9 @@ export function LoginForm({ redirectTo = '/' }: { redirectTo?: string }) {
 
         <p className="text-sm text-center text-gray-600">
           Don&apos;t have an account?{' '}
-          <a href="/signup" className="text-blue-600 hover:underline">
+          <Link to="/signup" className="text-blue-600 hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       </form>
     </div>

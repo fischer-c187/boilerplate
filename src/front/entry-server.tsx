@@ -1,72 +1,18 @@
-import auth from '@/server/api/auth'
-import { serve } from '@hono/node-server'
-import { serveStatic } from '@hono/node-server/serve-static'
 import {
   createRequestHandler,
   renderRouterToString,
   RouterServer,
 } from '@tanstack/react-router/ssr/server'
-import 'dotenv/config'
 import { Hono } from 'hono'
-import { compress } from 'hono/compress'
-import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
-import { secureHeaders } from 'hono/secure-headers'
-import mailApi from '../server/api/mail.ts'
-import testApi from '../server/api/test.ts'
-import { createRouter } from './router.ts'
+import { createRouter } from './router'
 
-const port = process.env.NODE_SERVER_PORT ? Number.parseInt(process.env.NODE_SERVER_PORT, 10) : 3000
-const host = process.env.NODE_SERVER_HOST || 'localhost'
+const ssrRoute = new Hono()
 
-const app = new Hono()
-
-// Security headers
-app.use(secureHeaders())
-
-// Logger
-app.use(logger())
-
-// CORS - configure via environment variable
-const allowedOrigin = process.env.CORS_ORIGIN || '*'
-app.use(
-  cors({
-    origin: allowedOrigin,
-    credentials: true,
-  })
-)
-// Setup API routes
-const routes = [testApi, auth, mailApi]
-
-routes.forEach((route) => {
-  app.basePath('/api').route('/', route)
-})
-
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(compress())
-
-  app.use(
-    '/*',
-    serveStatic({
-      root: './dist/client',
-    })
-  )
-}
-
-// Handle all other requests with TanStack Router
-app.use('*', async (c) => {
+// Handle all SSR requests
+ssrRoute.use('*', async (c) => {
   const handler = createRequestHandler({
     request: c.req.raw,
-    createRouter: () => {
-      const router = createRouter()
-      router.update({
-        context: {
-          ...router.options.context,
-        },
-      })
-      return router
-    },
+    createRouter,
   })
 
   return await handler(({ responseHeaders, router }) => {
@@ -78,18 +24,4 @@ app.use('*', async (c) => {
   })
 })
 
-// Serve the app in production
-if (process.env.NODE_ENV === 'production') {
-  serve(
-    {
-      fetch: app.fetch,
-      port: port,
-      hostname: host,
-    },
-    (info) => {
-      console.log(`Production server is running on http://${host}:${info.port}`)
-    }
-  )
-}
-
-export default app
+export default ssrRoute

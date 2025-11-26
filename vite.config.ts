@@ -11,7 +11,7 @@ const ssrBuild = {
   copyPublicDir: false,
   emptyOutDir: false,
   rollupOptions: {
-    input: resolve(__dirname, 'src/front/entry-server.tsx'),
+    input: resolve(__dirname, 'src/server/index.ts'),
     output: {
       entryFileNames: 'index.js',
       chunkFileNames: 'assets/[name]-[hash].js',
@@ -31,6 +31,16 @@ const clientBuild = {
       entryFileNames: 'assets/[name].js',
       chunkFileNames: 'assets/[name]-[hash].js',
       assetFileNames: 'assets/[name]-[hash][extname]',
+      manualChunks: {
+        // React core
+        'vendor-react': ['react', 'react-dom'],
+        // TanStack ecosystem
+        'vendor-tanstack': ['@tanstack/react-query', '@tanstack/react-router'],
+        // i18n
+        'vendor-i18n': ['i18next', 'react-i18next'],
+        // Validation
+        'vendor-zod': ['zod'],
+      },
     },
   },
   manifest: true,
@@ -46,7 +56,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     tailwindcss(),
     devServer({
-      entry: 'src/front/entry-server.tsx',
+      entry: 'src/server/index.ts',
       injectClientScript: false,
       exclude: [
         /^\/src\/.+/, // Allow Vite to handle /src/ requests

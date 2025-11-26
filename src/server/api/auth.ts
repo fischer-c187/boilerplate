@@ -1,11 +1,9 @@
+import { auth } from '@/server/adaptaters/auth/auth'
 import { Hono } from 'hono'
-import { auth } from '../auth/auth'
 
 const router = new Hono({
   strict: false,
-})
-
-router.on(['POST', 'GET'], '/auth/*', (c) => {
+}).on(['POST', 'GET'], '/auth/*', (c) => {
   return auth.handler(c.req.raw)
 })
 

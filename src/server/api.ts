@@ -1,0 +1,10 @@
+import auth from '@/server/api/auth'
+import mailApi from '@/server/api/mail'
+import testApi from '@/server/api/test'
+import { Hono } from 'hono'
+
+// Create API app separately for type inference (no SSR dependencies here)
+const apiApp = new Hono().route('/', testApi).route('/', auth).route('/', mailApi)
+
+export default apiApp
+export type AppType = typeof apiApp
