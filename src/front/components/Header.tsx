@@ -1,7 +1,7 @@
-import { authClient } from '@/shared/api-client/auth/auth.api'
-import { useTranslation } from '@/front/hooks/useTranslation'
 import LanguageSwitcher from '@/front/components/LanguageSwitcher'
+import { authClient } from '@/shared/api-client/auth/auth.api'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 
 export default function Header() {
   const { t } = useTranslation('common')
