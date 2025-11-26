@@ -1,4 +1,5 @@
 import { client } from '@/shared/api-client/client'
+import { useTranslation } from '@/front/hooks/useTranslation'
 import { createFileRoute, useRouteContext } from '@tanstack/react-router'
 import type { User } from 'better-auth'
 import { useState } from 'react'
@@ -9,6 +10,7 @@ export const Route = createFileRoute('/_auth/secret')({
 })
 
 function SecretPage() {
+  const { t } = useTranslation('common')
   const { session } = useRouteContext({ from: '/_auth' })
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
@@ -36,18 +38,15 @@ function SecretPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-lg shadow-2xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">🔒 Secret Page</h1>
-          <p className="text-gray-600">This page is only accessible to authenticated users</p>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">🔒 {t('nav.profile')}</h1>
+          <p className="text-gray-600">{t('message.loading')}</p>
         </div>
 
         <div className="bg-blue-50 border-l-4 border-blue-600 p-6 mb-6">
           <h2 className="text-xl font-semibold text-blue-900 mb-2">
-            Welcome, {user?.name || user?.email}!
+            {t('nav.home')}, {user?.name || user?.email}!
           </h2>
-          <p className="text-blue-800">
-            You have successfully accessed the secret area. Only authenticated users can see this
-            content.
-          </p>
+          <p className="text-blue-800">{t('message.success')}</p>
         </div>
 
         <div className="space-y-4">
@@ -55,11 +54,11 @@ function SecretPage() {
             <h3 className="font-semibold text-gray-700 mb-2">User Information</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>
-                <span className="font-medium">Email:</span> {user?.email}
+                <span className="font-medium">{t('form.email')}:</span> {user?.email}
               </li>
               {user?.name && (
                 <li>
-                  <span className="font-medium">Name:</span> {user.name}
+                  <span className="font-medium">{t('form.name')}:</span> {user.name}
                 </li>
               )}
               <li>
@@ -82,7 +81,7 @@ function SecretPage() {
             onClick={() => void handleSendEmail()}
             className="bg-blue-500 text-white px-4 py-2 rounded-md"
           >
-            {emailSent ? 'Email Sent' : 'Send Email'}
+            {emailSent ? 'Email Sent' : t('button.submit')}
           </button>
         }
       </div>
