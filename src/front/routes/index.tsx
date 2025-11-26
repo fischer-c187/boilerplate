@@ -1,7 +1,7 @@
 import { testQueryOptions, useGetTest } from '@/front/api/example.query'
 import Counter from '@/front/components/Counter'
-import { useTranslation } from '@/front/hooks/useTranslation'
 import { createFileRoute } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/')({
   // ✅ Loader : Pre-fetch les données côté serveur

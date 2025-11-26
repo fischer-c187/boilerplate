@@ -1,8 +1,8 @@
 import { client } from '@/shared/api-client/client'
-import { useTranslation } from '@/front/hooks/useTranslation'
 import { createFileRoute, useRouteContext } from '@tanstack/react-router'
 import type { User } from 'better-auth'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/_auth/secret')({
   component: SecretPage,
