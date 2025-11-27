@@ -1,16 +1,17 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createRouter as createTanstackRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
+import type { i18n } from 'i18next'
 import { getQueryClient } from './lib/queryClient'
 import { routeTree } from './routeTree.gen'
 
 export type RouterContext = {
   head: string
   queryClient: QueryClient
+  i18n: i18n
 }
 
-export function createRouter() {
-  // Récupère le QueryClient approprié (nouveau en SSR, singleton en client)
+export function createRouter(i18nInstance: i18n) {
   const queryClient = getQueryClient()
 
   const router = createTanstackRouter({
@@ -18,6 +19,7 @@ export function createRouter() {
     context: {
       head: '',
       queryClient,
+      i18n: i18nInstance,
     },
     defaultPreload: 'intent',
     scrollRestoration: true,

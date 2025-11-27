@@ -1,7 +1,10 @@
+import LanguageSwitcher from '@/front/components/LanguageSwitcher'
 import { authClient } from '@/shared/api-client/auth/auth.api'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 
 export default function Header() {
+  const { t } = useTranslation('common')
   const session = authClient.useSession()
   const isLoggedIn = session.data?.user != null
   const navigate = useNavigate()
@@ -16,7 +19,7 @@ export default function Header() {
       <nav className="flex flex-row relative">
         <div className="px-2 font-bold">
           <Link to="/" className="relative z-10">
-            Home
+            {t('nav.home')}
           </Link>
         </div>
         <div className="px-2 font-bold">
@@ -33,7 +36,7 @@ export default function Header() {
             </div>
             <div className="px-2 font-bold">
               <Link to="/login" className="relative z-10">
-                Log In
+                {t('nav.login')}
               </Link>
             </div>
           </>
@@ -42,7 +45,7 @@ export default function Header() {
         <>
           <div className="px-2 font-bold">
             <Link to="/secret" className="relative z-10 text-purple-600 hover:text-purple-800">
-              🔒 Secret
+              🔒 {t('nav.profile')}
             </Link>
           </div>
           <div className="px-2 font-bold">
@@ -50,7 +53,7 @@ export default function Header() {
               onClick={() => void handleLogout()}
               className="relative z-10 hover:text-red-600 transition-colors cursor-pointer"
             >
-              Log Out
+              {t('nav.logout')}
             </button>
           </div>
         </>
@@ -63,6 +66,7 @@ export default function Header() {
           }}
         />
       </nav>
+      <LanguageSwitcher />
     </header>
   )
 }

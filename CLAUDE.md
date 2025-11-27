@@ -288,6 +288,7 @@ export default app
 - **Indentation**: 2 spaces
 - **Route handlers**: Keep pure, return responses directly
 - **Commits**: Conventional Commits (`feat:`, `fix:`, `chore:`)
+- **comment**: All code comments must always be written in English. No exceptions
 
 ## Configuration
 

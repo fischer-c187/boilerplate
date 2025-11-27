@@ -1,6 +1,7 @@
 import { testQueryOptions, useGetTest } from '@/front/api/example.query'
 import Counter from '@/front/components/Counter'
 import { createFileRoute } from '@tanstack/react-router'
+import { useTranslation } from 'react-i18next'
 
 export const Route = createFileRoute('/')({
   // ✅ Loader : Pre-fetch les données côté serveur
@@ -11,6 +12,7 @@ export const Route = createFileRoute('/')({
 })
 
 function App() {
+  const { t } = useTranslation('common')
   // ✅ useSuspenseQuery : data est garanti (pas de undefined possible)
   const { data } = useGetTest()
 
@@ -18,7 +20,7 @@ function App() {
   return (
     <div className="text-center">
       <header className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white text-[calc(10px+2vmin)]">
-        <h1 className="text-4xl font-bold mb-6 text-red-500">Welcome to TanStack + Hono</h1>
+        <h1 className="text-4xl font-bold mb-6 text-red-500">{t('nav.home')} - TanStack + Hono</h1>
         <h2>SSR page</h2>
         <p>{data.message}</p>
         <p className="max-w-2xl mx-auto mb-8 text-lg leading-relaxed">

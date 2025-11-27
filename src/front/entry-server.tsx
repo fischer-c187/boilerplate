@@ -1,3 +1,4 @@
+import { createI18n, detectLanguage } from '@/shared/i18n/config'
 import {
   createRequestHandler,
   renderRouterToString,
@@ -8,11 +9,13 @@ import { createRouter } from './router'
 
 const ssrRoute = new Hono()
 
-// Handle all SSR requests
 ssrRoute.use('*', async (c) => {
+  const language = detectLanguage(c.req.raw)
+  const i18nInstance = await createI18n(language)
+
   const handler = createRequestHandler({
     request: c.req.raw,
-    createRouter,
+    createRouter: () => createRouter(i18nInstance),
   })
 
   return await handler(({ responseHeaders, router }) => {
