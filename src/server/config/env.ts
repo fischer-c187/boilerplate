@@ -18,6 +18,11 @@ const serverEnvSchema = z.object({
 
   // Mail
   MAIL_PROVIDER: z.enum(['resend']).optional(),
+
+  // Stripe
+  STRIPE_SECRET_KEY: z.string(),
+  STRIPE_PUBLIC_KEY: z.string(),
+  STRIPE_WEBHOOK_SECRET: z.string(),
 })
 
 const parsed = serverEnvSchema.safeParse(process.env)
