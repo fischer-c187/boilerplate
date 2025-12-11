@@ -1,0 +1,367 @@
+import db from '@/server/adaptaters/db/postgres'
+import {
+  invoice,
+  plans,
+  stripeCustomer,
+  subscription,
+  webhookEvent,
+} from '@/server/adaptaters/db/schema/stripe-schema'
+import { stripe } from '@/server/adaptaters/stripe'
+import { env } from '@/server/config/env'
+import { desc, eq } from 'drizzle-orm'
+import type Stripe from 'stripe'
+
+type Tx = Parameters<typeof db.transaction>[0] extends (tx: infer T) => any ? T : never
+
+type DbLike = Tx | typeof db
+
+const frontendUrl = 'http://localhost:3000'
+
+const VALID_SUBSCRIPTION_STATUSES = [
+  'active',
+  'canceled',
+  'incomplete',
+  'incomplete_expired',
+  'past_due',
+  'trialing',
+  'unpaid',
+] as const
+
+type ValidSubscriptionStatus = (typeof VALID_SUBSCRIPTION_STATUSES)[number]
+
+const isValidSubscriptionStatus = (status: string): status is ValidSubscriptionStatus => {
+  return VALID_SUBSCRIPTION_STATUSES.includes(status as ValidSubscriptionStatus)
+}
+
+const stripeService = () => {
+  const createCheckoutSession = async (
+    lineItems: Stripe.Checkout.SessionCreateParams.LineItem[]
+  ) => {
+    try {
+      const session = await stripe.checkout.sessions.create({
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: `${frontendUrl}/success`,
+        cancel_url: `${frontendUrl}/cancel`,
+      })
+      return session
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to create checkout session')
+    }
+  }
+
+  const getOrCreateCustomer = async (userId: string, email?: string, name?: string) => {
+    try {
+      const [existingCustomer] = await db
+        .select()
+        .from(stripeCustomer)
+        .where(eq(stripeCustomer.userId, userId))
+        .limit(1)
+
+      if (existingCustomer) {
+        return existingCustomer
+      }
+
+      if (!email) {
+        throw new Error('User does not exist and email is required for creation of customer')
+      }
+
+      const customer = await stripe.customers.create({
+        email,
+        name,
+      })
+
+      const [newCustomer] = await db
+        .insert(stripeCustomer)
+        .values({
+          userId,
+          email,
+          name,
+          stripeCustomerId: customer.id,
+        })
+        .returning()
+
+      return newCustomer
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to get or create customer')
+    }
+  }
+
+  const createSubscriptionCheckout = async (
+    userId: string,
+    email: string,
+    priceId: string,
+    name?: string
+  ) => {
+    const customer = await getOrCreateCustomer(userId, email, name)
+    try {
+      const price = await stripeService().getPrice(priceId)
+      if (!price) {
+        throw new Error('Price not found')
+      }
+      const session = await stripe.checkout.sessions.create({
+        customer: customer.stripeCustomerId,
+        mode: 'subscription',
+        success_url: `${frontendUrl}/success`,
+        cancel_url: `${frontendUrl}/cancel`,
+        line_items: [{ price: priceId, quantity: 1 }],
+        metadata: {
+          userId,
+        },
+      })
+      return session
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to create subscription checkout')
+    }
+  }
+
+  const createPortalSession = async (userId: string) => {
+    const customer = await getOrCreateCustomer(userId)
+    if (!customer) {
+      throw new Error('customer not found')
+    }
+    try {
+      const session = await stripe.billingPortal.sessions.create({
+        customer: customer.stripeCustomerId,
+        return_url: `${frontendUrl}`,
+      })
+      return session
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to create portal session')
+    }
+  }
+
+  const getUserSubscription = async (userId: string) => {
+    try {
+      const [currentSubscription] = await db
+        .select()
+        .from(subscription)
+        .where(eq(subscription.userId, userId))
+        .limit(1)
+      return currentSubscription
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to get user subscription or subscription not found')
+    }
+  }
+
+  const hasActivePremium = async (userId: string) => {
+    const sub = await getUserSubscription(userId)
+    return sub?.status === 'active'
+  }
+
+  const getUserInvoices = async (userId: string) => {
+    const customer = await getOrCreateCustomer(userId)
+    if (!customer) {
+      throw new Error('customer not found for getting invoices')
+    }
+    try {
+      const invoices = await db
+        .select()
+        .from(invoice)
+        .where(eq(invoice.stripeCustomerId, customer.id))
+        .orderBy(desc(invoice.createdAt))
+      return invoices
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to get user invoices')
+    }
+  }
+
+  const getPrice = async (priceId: string) => {
+    try {
+      const price = await stripe.prices.retrieve(priceId)
+      return price
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to get price')
+    }
+  }
+
+  const syncSubscription = async (subscriptionId: string, dbLike: DbLike) => {
+    try {
+      const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId, {
+        expand: ['items.data.price'],
+      })
+      if (!stripeSubscription) {
+        throw new Error('Subscription not found')
+      }
+      const [customer] = await dbLike
+        .select()
+        .from(stripeCustomer)
+        .where(eq(stripeCustomer.stripeCustomerId, stripeSubscription.customer as string))
+        .limit(1)
+      if (!customer) {
+        throw new Error('Customer not found')
+      }
+      const priceId = stripeSubscription.items.data[0]?.price.id
+      if (!priceId) {
+        throw new Error('No price found in subscription')
+      }
+      const [plan] = await dbLike
+        .select()
+        .from(plans)
+        .where(eq(plans.stripePriceId, priceId))
+        .limit(1)
+      if (!plan) {
+        throw new Error('Plan not found')
+      }
+
+      // Valider que le status correspond à notre enum
+      if (!isValidSubscriptionStatus(stripeSubscription.status)) {
+        throw new Error(
+          `Invalid subscription status: ${stripeSubscription.status}. Expected one of: ${VALID_SUBSCRIPTION_STATUSES.join(', ')}`
+        )
+      }
+
+      const subscriptionData = {
+        userId: customer.userId,
+        stripeCustomerId: customer.id,
+        planId: plan.id,
+        stripeSubscriptionId: stripeSubscription.id,
+        status: stripeSubscription.status,
+        currentPeriodStart: new Date(stripeSubscription.items.data[0].current_period_start * 1000),
+        currentPeriodEnd: new Date(stripeSubscription.items.data[0].current_period_end * 1000),
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+        canceledAt: stripeSubscription.canceled_at
+          ? new Date(stripeSubscription.canceled_at * 1000)
+          : null,
+        endedAt: stripeSubscription.ended_at ? new Date(stripeSubscription.ended_at * 1000) : null,
+        trialStart: stripeSubscription.trial_start
+          ? new Date(stripeSubscription.trial_start * 1000)
+          : null,
+        trialEnd: stripeSubscription.trial_end
+          ? new Date(stripeSubscription.trial_end * 1000)
+          : null,
+      }
+
+      const [synced] = await dbLike
+        .insert(subscription)
+        .values(subscriptionData)
+        .onConflictDoUpdate({
+          target: subscription.stripeSubscriptionId,
+          set: subscriptionData,
+        })
+        .returning()
+      return synced
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to sync subscription')
+    }
+  }
+
+  const verifyWebhookSignature = (signature: string, body: string) => {
+    try {
+      const event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_WEBHOOK_SECRET)
+      return event
+    } catch (error) {
+      console.error(error)
+      throw new Error('⚠️  Webhook signature verification failed.')
+    }
+  }
+
+  const getWebhookEvent = async (eventId: string) => {
+    try {
+      const [existingEvent] = await db
+        .select()
+        .from(webhookEvent)
+        .where(eq(webhookEvent.id, eventId))
+        .limit(1)
+
+      return existingEvent ?? null
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to get webhook event')
+    }
+  }
+  const createWebhookEvent = async (event: Stripe.Event, dbLike: DbLike) => {
+    try {
+      const [newEvent] = await dbLike
+        .insert(webhookEvent)
+        .values({
+          id: event.id,
+          type: event.type,
+          data: JSON.stringify(event.data),
+        })
+        .returning()
+
+      return newEvent
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to create webhook event')
+    }
+  }
+
+  const markWebhookEventProcessed = async (eventId: string, error?: string) => {
+    try {
+      await db
+        .update(webhookEvent)
+        .set({ processed: !error, processedAt: new Date(), processingError: error })
+        .where(eq(webhookEvent.id, eventId))
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to mark webhook event processed')
+    }
+  }
+
+  const processWebhookEvent = async (event: Stripe.Event) => {
+    try {
+      const existingEvent = await getWebhookEvent(event.id)
+      if (existingEvent) {
+        console.log(`Event ${event.id} already processed`)
+        return false
+      }
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to get webhook event')
+    }
+
+    try {
+      await createWebhookEvent(event, db)
+
+      switch (event.type) {
+        case 'checkout.session.completed':
+          console.log('Checkout session completed')
+          break
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object
+          await syncSubscription(subscription.id, db)
+          console.log(`Subscription ${event.type}: ${subscription.id}`)
+          break
+        }
+        default:
+          break
+      }
+      await markWebhookEventProcessed(event.id)
+      return { success: true }
+    } catch (error) {
+      await markWebhookEventProcessed(
+        event.id,
+        error instanceof Error ? error.message : 'Unknown error'
+      )
+      console.error(error)
+      throw new Error('Failed to process webhook event')
+    }
+  }
+
+  return {
+    createCheckoutSession,
+    getOrCreateCustomer,
+    createSubscriptionCheckout,
+    createPortalSession,
+    getUserSubscription,
+    hasActivePremium,
+    getUserInvoices,
+    processWebhookEvent,
+    verifyWebhookSignature,
+    getPrice,
+    syncSubscription,
+  }
+}
+
+export default stripeService
