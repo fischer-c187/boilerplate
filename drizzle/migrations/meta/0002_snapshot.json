@@ -1,6 +1,6 @@
 {
-  "id": "c560d68b-c326-4044-a244-40479bcb099d",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "7fe12e07-3b80-4d26-8d03-c54e5d752e83",
+  "prevId": "0d52050e-2b1c-44d8-b692-4cf2652355d2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -401,7 +401,7 @@
           "tableTo": "stripe_customer",
           "columnsFrom": ["stripe_customer_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -612,7 +612,7 @@
           "name": "plan_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "stripe_subscription_id": {
           "name": "stripe_subscription_id",
