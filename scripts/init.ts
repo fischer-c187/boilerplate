@@ -1,4 +1,7 @@
+import db from '@/server/adaptaters/db/postgres'
+import { plans } from '@/server/adaptaters/db/schema/stripe-schema'
 import { env } from '@/server/config/env'
+import { eq } from 'drizzle-orm'
 import Stripe from 'stripe'
 
 export const stripe = new Stripe(env.STRIPE_SECRET_KEY)
@@ -40,21 +43,81 @@ const createSubscriptions = async () => {
   const createdPrices: Array<{ name: string; priceId: string }> = []
 
   for (const subscription of subscriptions) {
-    // Skip free subscription (not needed in Stripe)
+    const planId = subscription.name.toLowerCase().replace(/ /g, '-')
+
+    // Handle free plan (DB only, not in Stripe)
     if (subscription.price === 0) {
-      console.log(`⊘ Skipping "${subscription.name}" (free plan, not needed in Stripe)`)
+      // Check if plan exists in DB
+      const [existingPlan] = await db.select().from(plans).where(eq(plans.id, planId)).limit(1)
+
+      if (existingPlan) {
+        console.log(`✓ Free plan "${subscription.name}" already exists in DB`)
+      } else {
+        // Insert free plan into DB
+        await db.insert(plans).values({
+          id: planId,
+          name: subscription.name,
+          description: subscription.description,
+          price: subscription.price * 100,
+          currency: 'eur',
+          interval: subscription.interval,
+          isActive: true,
+          sortOrder: 0,
+        })
+        console.log(`✅ Created free plan "${subscription.name}" in DB`)
+      }
       continue
     }
 
-    // Check if product already exists
+    // Check if product already exists in Stripe
     const existingProduct = products.data.find((product) => product.name === subscription.name)
 
     if (existingProduct) {
-      console.log(`✓ Product "${subscription.name}" already exists (${existingProduct.id})`)
+      console.log(
+        `✓ Product "${subscription.name}" already exists in Stripe (${existingProduct.id})`
+      )
+
+      // Get the price ID for this product
+      const prices = await stripe.prices.list({
+        product: existingProduct.id,
+        active: true,
+        limit: 1,
+      })
+
+      if (prices.data.length > 0) {
+        const priceId = prices.data[0].id
+        const productId = existingProduct.id
+
+        // Check if plan exists in DB
+        const [existingPlan] = await db
+          .select()
+          .from(plans)
+          .where(eq(plans.stripePriceId, priceId))
+          .limit(1)
+
+        if (!existingPlan) {
+          // Insert plan into DB
+          await db.insert(plans).values({
+            id: planId,
+            name: subscription.name,
+            description: subscription.description,
+            stripePriceId: priceId,
+            stripeProductId: productId,
+            price: subscription.price * 100,
+            currency: 'eur',
+            interval: subscription.interval,
+            isActive: true,
+            sortOrder: subscription.name.includes('monthly') ? 1 : 2,
+          })
+          console.log(`✅ Added "${subscription.name}" to DB with Price ID: ${priceId}`)
+        } else {
+          console.log(`✓ Plan "${subscription.name}" already exists in DB`)
+        }
+      }
       continue
     }
 
-    // Create product and price
+    // Create product and price in Stripe
     try {
       const stripeProduct = await stripe.products.create({
         name: subscription.name,
@@ -71,6 +134,20 @@ const createSubscriptions = async () => {
         },
       })
 
+      // Insert plan into DB
+      await db.insert(plans).values({
+        id: planId,
+        name: subscription.name,
+        description: subscription.description,
+        stripePriceId: price.id,
+        stripeProductId: stripeProduct.id,
+        price: subscription.price * 100,
+        currency: 'eur',
+        interval: subscription.interval,
+        isActive: true,
+        sortOrder: subscription.name.includes('monthly') ? 1 : 2,
+      })
+
       createdPrices.push({
         name: subscription.name,
         priceId: price.id,
@@ -79,6 +156,7 @@ const createSubscriptions = async () => {
       console.log(`✅ Created "${subscription.name}"`)
       console.log(`   Product ID: ${stripeProduct.id}`)
       console.log(`   Price ID: ${price.id}`)
+      console.log(`   Added to DB with ID: ${planId}`)
     } catch (error) {
       console.error(`❌ Error creating "${subscription.name}":`, error)
     }
@@ -97,4 +175,12 @@ const createSubscriptions = async () => {
   }
 }
 
-void createSubscriptions()
+createSubscriptions()
+  .then(() => {
+    console.log('\n✅ Script completed successfully')
+    process.exit(0)
+  })
+  .catch((error) => {
+    console.error('\n❌ Script failed:', error)
+    process.exit(1)
+  })
