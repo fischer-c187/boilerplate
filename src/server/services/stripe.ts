@@ -8,7 +8,7 @@ import {
 } from '@/server/adaptaters/db/schema/stripe-schema'
 import { stripe } from '@/server/adaptaters/stripe'
 import { env } from '@/server/config/env'
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import type Stripe from 'stripe'
 
 type Tx = Parameters<typeof db.transaction>[0] extends (tx: infer T) => any ? T : never
@@ -80,7 +80,7 @@ const stripeService = () => {
   ) => {
     const customer = await getOrCreateCustomer(userId, email, name)
     try {
-      const price = await stripeService().getPrice(priceId)
+      const price = await getActivePlan(priceId)
       if (!price) {
         throw new Error('Price not found')
       }
@@ -102,19 +102,21 @@ const stripeService = () => {
   }
 
   const createPortalSession = async (userId: string) => {
-    const customer = await getOrCreateCustomer(userId)
-    if (!customer) {
-      throw new Error('customer not found')
-    }
     try {
+      const customer = await getOrCreateCustomer(userId)
+      if (!customer) {
+        throw new Error('customer not found')
+      }
+
       const session = await stripe.billingPortal.sessions.create({
         customer: customer.stripeCustomerId,
         return_url: `${frontendUrl}`,
       })
+
       return session
     } catch (error) {
-      console.error(error)
-      throw new Error('Failed to create portal session')
+      console.error('Failed to create portal session', error)
+      return null
     }
   }
 
@@ -124,6 +126,7 @@ const stripeService = () => {
         .select()
         .from(subscription)
         .where(eq(subscription.userId, userId))
+        .orderBy(desc(subscription.createdAt))
         .limit(1)
       return currentSubscription
     } catch (error) {
@@ -155,13 +158,18 @@ const stripeService = () => {
     }
   }
 
-  const getPrice = async (priceId: string) => {
+  const getActivePlan = async (priceId: string) => {
     try {
-      const price = await stripe.prices.retrieve(priceId)
-      return price
+      const [plan] = await db
+        .select()
+        .from(plans)
+        .where(and(eq(plans.stripePriceId, priceId), eq(plans.isActive, true)))
+        .limit(1)
+
+      return plan || null
     } catch (error) {
       console.error(error)
-      throw new Error('Failed to get price')
+      throw new Error('Failed to get plan')
     }
   }
 
@@ -355,7 +363,7 @@ const stripeService = () => {
   const processWebhookEvent = async (event: Stripe.Event) => {
     try {
       const existingEvent = await getWebhookEvent(event.id)
-      if (existingEvent) {
+      if (existingEvent?.processed) {
         console.log(`Event ${event.id} already processed`)
         return false
       }
@@ -363,7 +371,7 @@ const stripeService = () => {
       console.error(error)
       throw new Error('Failed to get webhook event')
     }
-    await db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       try {
         await createWebhookEvent(event, tx)
 
@@ -388,7 +396,7 @@ const stripeService = () => {
             break
         }
         await markWebhookEventProcessed(event.id, tx)
-        return { success: true }
+        return true
       } catch (error) {
         await markWebhookEventProcessed(
           event.id,
@@ -410,7 +418,7 @@ const stripeService = () => {
     getUserInvoices,
     processWebhookEvent,
     verifyWebhookSignature,
-    getPrice,
+    getActivePlan,
     syncSubscription,
     syncInvoice,
   }
