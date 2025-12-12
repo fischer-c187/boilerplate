@@ -254,6 +254,67 @@ const stripeService = () => {
     }
   }
 
+  const syncInvoice = async (invoiceId: string, dbLike: DbLike) => {
+    try {
+      const stripeInvoice = await stripe.invoices.retrieve(invoiceId)
+      if (!stripeInvoice) {
+        throw new Error('Invoice not found')
+      }
+
+      const [customer] = await dbLike
+        .select()
+        .from(stripeCustomer)
+        .where(eq(stripeCustomer.stripeCustomerId, stripeInvoice.customer as string))
+        .limit(1)
+      if (!customer) {
+        throw new Error('Customer not found')
+      }
+
+      let subscriptionDbId: string | null = null
+      if (stripeInvoice.lines.data[0]?.subscription) {
+        const [sub] = await dbLike
+          .select()
+          .from(subscription)
+          .where(
+            eq(
+              subscription.stripeSubscriptionId,
+              stripeInvoice.lines.data[0].subscription as string
+            )
+          )
+          .limit(1)
+        subscriptionDbId = sub?.id || null
+      }
+
+      const invoiceData = {
+        id: stripeInvoice.id,
+        subscriptionId: subscriptionDbId,
+        stripeCustomerId: customer.id,
+        amountPaid: stripeInvoice.amount_paid,
+        amountDue: stripeInvoice.amount_due,
+        currency: stripeInvoice.currency,
+        status: stripeInvoice.status || 'draft',
+        hostedInvoiceUrl: stripeInvoice.hosted_invoice_url || null,
+        invoicePdf: stripeInvoice.invoice_pdf || null,
+        paid: stripeInvoice.status === 'paid',
+        periodStart: new Date(stripeInvoice.period_start * 1000),
+        periodEnd: new Date(stripeInvoice.period_end * 1000),
+      }
+
+      const [synced] = await dbLike
+        .insert(invoice)
+        .values(invoiceData)
+        .onConflictDoUpdate({
+          target: invoice.id,
+          set: invoiceData,
+        })
+        .returning()
+      return synced
+    } catch (error) {
+      console.error(error)
+      throw new Error('Failed to sync invoice')
+    }
+  }
+
   const verifyWebhookSignature = (signature: string, body: string) => {
     try {
       const event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_WEBHOOK_SECRET)
@@ -324,17 +385,29 @@ const stripeService = () => {
       await createWebhookEvent(event, db)
 
       switch (event.type) {
-        case 'checkout.session.completed':
-          console.log('Checkout session completed')
-          break
         case 'customer.subscription.created':
+        case 'customer.subscription.deleted':
         case 'customer.subscription.updated': {
+          console.log(`[WEBHOOK] Received ${event.type}`)
           const subscription = event.data.object
+          console.log(`[WEBHOOK] Subscription ID: ${subscription.id}`)
+          console.log(`[WEBHOOK] Subscription Status: ${subscription.status}`)
           await syncSubscription(subscription.id, db)
-          console.log(`Subscription ${event.type}: ${subscription.id}`)
+          console.log(`[WEBHOOK] Sync completed for ${subscription.id}`)
+          break
+        }
+        case 'invoice.paid':
+        case 'invoice.payment_failed': {
+          console.log(`[WEBHOOK] Received ${event.type}`)
+          const invoice = event.data.object
+          console.log(`[WEBHOOK] Invoice ID: ${invoice.id}`)
+          console.log(`[WEBHOOK] Invoice Status: ${invoice.status}`)
+          await syncInvoice(invoice.id, db)
+          console.log(`[WEBHOOK] Invoice sync completed for ${invoice.id}`)
           break
         }
         default:
+          console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
           break
       }
       await markWebhookEventProcessed(event.id)
@@ -361,6 +434,7 @@ const stripeService = () => {
     verifyWebhookSignature,
     getPrice,
     syncSubscription,
+    syncInvoice,
   }
 }
 

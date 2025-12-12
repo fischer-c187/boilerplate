@@ -14,7 +14,7 @@
     "docker:logs": "docker compose -f docker/docker-compose.yml --env-file .env logs -f",
     "docker:ps": "docker compose -f docker/docker-compose.yml --env-file .env ps",
     "docker:restart": "docker compose -f docker/docker-compose.yml --env-file .env restart",
-    "stripe:listen": "stripe listen --events checkout.session.completed,customer.subscription.created,customer.subscription.updated --forward-to localhost:3000/api/stripe/webhook",
+    "stripe:listen": "stripe listen --events customer.subscription.created,customer.subscription.updated,customer.subscription.deleted,invoice.paid,invoice.payment_failed --forward-to localhost:3000/api/stripe/webhook",
     "stripe:trigger": "stripe trigger checkout.session.completed",
     "build:client": "NODE_ENV=production vite build --mode client",
     "build:server": "NODE_ENV=production vite build",

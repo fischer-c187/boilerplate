@@ -83,7 +83,7 @@ const router = new Hono()
     const signature = c.req.header('stripe-signature')
     const body = await c.req.text()
     if (!signature || !body) {
-      return c.json({ error: 'No signature or body' }, 400)
+      return c.json({ error: 'No signature or body' }, 200)
     }
     try {
       const event = stripeService().verifyWebhookSignature(signature, body)
@@ -93,7 +93,7 @@ const router = new Hono()
       }
       return c.json({ received: true })
     } catch {
-      return c.json({ error: 'Failed to verify webhook signature' }, 500)
+      return c.json({ error: 'Failed to verify webhook signature' }, 200)
     }
   })
 export default router
