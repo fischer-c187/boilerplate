@@ -330,37 +330,46 @@ const stripeService = () => {
       throw new Error('Failed to get webhook event')
     }
   }
-  const createWebhookEvent = async (event: Stripe.Event, dbLike: DbLike) => {
-    try {
-      const [newEvent] = await dbLike
-        .insert(webhookEvent)
-        .values({
-          id: event.id,
-          type: event.type,
-          data: JSON.stringify(event.data),
-        })
-        .returning()
 
-      return newEvent
+  const createWebhookEvent = async (event: Stripe.Event) => {
+    try {
+      await db.insert(webhookEvent).values({
+        id: event.id,
+        type: event.type,
+        data: JSON.stringify(event.data),
+      })
     } catch (error) {
-      console.error(error)
-      throw new Error('Failed to create webhook event')
+      // Ignorer si déjà existe (race condition possible)
+      if (
+        error instanceof Error &&
+        (error.message?.includes('duplicate key') || error.message?.includes('unique constraint'))
+      ) {
+        // Event déjà créé, on continue
+      } else {
+        console.error(error)
+        throw new Error('Failed to create webhook event')
+      }
     }
   }
 
-  const markWebhookEventProcessed = async (eventId: string, dbLike: DbLike, error?: string) => {
+  const markWebhookEventProcessed = async (eventId: string, error?: string) => {
     try {
-      await dbLike
+      await db
         .update(webhookEvent)
-        .set({ processed: !error, processedAt: new Date(), processingError: error })
+        .set({
+          processed: !error,
+          processedAt: new Date(),
+          processingError: error || null,
+        })
         .where(eq(webhookEvent.id, eventId))
-    } catch (error) {
-      console.error(error)
+    } catch (updateError) {
+      console.error(updateError)
       throw new Error('Failed to mark webhook event processed')
     }
   }
 
   const processWebhookEvent = async (event: Stripe.Event) => {
+    // 1. Vérifier si déjà traité (idempotence)
     try {
       const existingEvent = await getWebhookEvent(event.id)
       if (existingEvent?.processed) {
@@ -371,42 +380,45 @@ const stripeService = () => {
       console.error(error)
       throw new Error('Failed to get webhook event')
     }
-    return await db.transaction(async (tx) => {
-      try {
-        await createWebhookEvent(event, tx)
 
-        switch (event.type) {
-          case 'customer.subscription.created':
-          case 'customer.subscription.deleted':
-          case 'customer.subscription.updated': {
-            console.log(`[WEBHOOK] Received ${event.type}`)
-            const subscription = event.data.object
-            await syncSubscription(subscription.id, tx)
-            break
-          }
-          case 'invoice.paid':
-          case 'invoice.payment_failed': {
-            console.log(`[WEBHOOK] Received ${event.type}`)
-            const invoice = event.data.object
-            await syncInvoice(invoice.id, tx)
-            break
-          }
-          default:
-            console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
-            break
+    // 2. Créer l'événement (persisté même en cas d'erreur)
+    await createWebhookEvent(event)
+
+    // 3. Traiter le webhook (sans transaction car 1 seule opération)
+    try {
+      switch (event.type) {
+        case 'customer.subscription.created':
+        case 'customer.subscription.deleted':
+        case 'customer.subscription.updated': {
+          console.log(`[WEBHOOK] Received ${event.type}`)
+          const subscription = event.data.object
+          await syncSubscription(subscription.id, db)
+          break
         }
-        await markWebhookEventProcessed(event.id, tx)
-        return true
-      } catch (error) {
-        await markWebhookEventProcessed(
-          event.id,
-          tx,
-          error instanceof Error ? error.message : 'Unknown error'
-        )
-        console.error(error)
-        throw new Error('Failed to process webhook event')
+        case 'invoice.paid':
+        case 'invoice.payment_failed': {
+          console.log(`[WEBHOOK] Received ${event.type}`)
+          const invoice = event.data.object
+          await syncInvoice(invoice.id, db)
+          break
+        }
+        default:
+          console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
+          break
       }
-    })
+
+      // 4. Marquer comme traité avec succès
+      await markWebhookEventProcessed(event.id)
+      return true
+    } catch (error) {
+      // 5. Marquer l'erreur (sera persisté)
+      await markWebhookEventProcessed(
+        event.id,
+        error instanceof Error ? error.message : 'Unknown error'
+      )
+      console.error(error)
+      throw new Error('Failed to process webhook event')
+    }
   }
 
   return {
