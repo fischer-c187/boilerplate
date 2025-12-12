@@ -5,38 +5,6 @@ import { getAuthenticatedUser, requireAuth } from '../middleware/auth'
 import stripeService from '../services/stripe'
 
 const router = new Hono()
-  .post('/stripe/test', requireAuth, (c) => {
-    return c.json({ authenticated: true })
-  })
-  .post(
-    '/stripe/checkout',
-    requireAuth,
-    zValidator(
-      'json',
-      z.object({
-        lineItems: z.array(
-          z.object({
-            price_data: z.object({
-              product_data: z.object({
-                name: z.string(),
-              }),
-              unit_amount: z.number(),
-              currency: z.string(),
-            }),
-            quantity: z.number(),
-          })
-        ),
-      })
-    ),
-    async (c) => {
-      const { lineItems } = c.req.valid('json')
-      const session = await stripeService().createCheckoutSession(lineItems)
-      if (!session) {
-        return c.json({ error: 'Failed to create checkout session' }, 500)
-      }
-      return c.json(session)
-    }
-  )
   .post(
     '/stripe/checkout/subscription',
     requireAuth,
@@ -83,6 +51,7 @@ const router = new Hono()
     const signature = c.req.header('stripe-signature')
     const body = await c.req.text()
     if (!signature || !body) {
+      // we need to return 200 to avoid stripe retries
       return c.json({ error: 'No signature or body' }, 200)
     }
     try {
@@ -93,6 +62,7 @@ const router = new Hono()
       }
       return c.json({ received: true })
     } catch {
+      // we need to return 200 to avoid stripe retries
       return c.json({ error: 'Failed to verify webhook signature' }, 200)
     }
   })

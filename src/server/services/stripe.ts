@@ -34,23 +34,6 @@ const isValidSubscriptionStatus = (status: string): status is ValidSubscriptionS
 }
 
 const stripeService = () => {
-  const createCheckoutSession = async (
-    lineItems: Stripe.Checkout.SessionCreateParams.LineItem[]
-  ) => {
-    try {
-      const session = await stripe.checkout.sessions.create({
-        line_items: lineItems,
-        mode: 'payment',
-        success_url: `${frontendUrl}/success`,
-        cancel_url: `${frontendUrl}/cancel`,
-      })
-      return session
-    } catch (error) {
-      console.error(error)
-      throw new Error('Failed to create checkout session')
-    }
-  }
-
   const getOrCreateCustomer = async (userId: string, email?: string, name?: string) => {
     try {
       const [existingCustomer] = await db
@@ -357,9 +340,9 @@ const stripeService = () => {
     }
   }
 
-  const markWebhookEventProcessed = async (eventId: string, error?: string) => {
+  const markWebhookEventProcessed = async (eventId: string, dbLike: DbLike, error?: string) => {
     try {
-      await db
+      await dbLike
         .update(webhookEvent)
         .set({ processed: !error, processedAt: new Date(), processingError: error })
         .where(eq(webhookEvent.id, eventId))
@@ -380,50 +363,45 @@ const stripeService = () => {
       console.error(error)
       throw new Error('Failed to get webhook event')
     }
+    await db.transaction(async (tx) => {
+      try {
+        await createWebhookEvent(event, tx)
 
-    try {
-      await createWebhookEvent(event, db)
-
-      switch (event.type) {
-        case 'customer.subscription.created':
-        case 'customer.subscription.deleted':
-        case 'customer.subscription.updated': {
-          console.log(`[WEBHOOK] Received ${event.type}`)
-          const subscription = event.data.object
-          console.log(`[WEBHOOK] Subscription ID: ${subscription.id}`)
-          console.log(`[WEBHOOK] Subscription Status: ${subscription.status}`)
-          await syncSubscription(subscription.id, db)
-          console.log(`[WEBHOOK] Sync completed for ${subscription.id}`)
-          break
+        switch (event.type) {
+          case 'customer.subscription.created':
+          case 'customer.subscription.deleted':
+          case 'customer.subscription.updated': {
+            console.log(`[WEBHOOK] Received ${event.type}`)
+            const subscription = event.data.object
+            await syncSubscription(subscription.id, tx)
+            break
+          }
+          case 'invoice.paid':
+          case 'invoice.payment_failed': {
+            console.log(`[WEBHOOK] Received ${event.type}`)
+            const invoice = event.data.object
+            await syncInvoice(invoice.id, tx)
+            break
+          }
+          default:
+            console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
+            break
         }
-        case 'invoice.paid':
-        case 'invoice.payment_failed': {
-          console.log(`[WEBHOOK] Received ${event.type}`)
-          const invoice = event.data.object
-          console.log(`[WEBHOOK] Invoice ID: ${invoice.id}`)
-          console.log(`[WEBHOOK] Invoice Status: ${invoice.status}`)
-          await syncInvoice(invoice.id, db)
-          console.log(`[WEBHOOK] Invoice sync completed for ${invoice.id}`)
-          break
-        }
-        default:
-          console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
-          break
+        await markWebhookEventProcessed(event.id, tx)
+        return { success: true }
+      } catch (error) {
+        await markWebhookEventProcessed(
+          event.id,
+          tx,
+          error instanceof Error ? error.message : 'Unknown error'
+        )
+        console.error(error)
+        throw new Error('Failed to process webhook event')
       }
-      await markWebhookEventProcessed(event.id)
-      return { success: true }
-    } catch (error) {
-      await markWebhookEventProcessed(
-        event.id,
-        error instanceof Error ? error.message : 'Unknown error'
-      )
-      console.error(error)
-      throw new Error('Failed to process webhook event')
-    }
+    })
   }
 
   return {
-    createCheckoutSession,
     getOrCreateCustomer,
     createSubscriptionCheckout,
     createPortalSession,
