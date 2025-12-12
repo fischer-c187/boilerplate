@@ -33,7 +33,7 @@ const router = new Hono()
     const userSession = getAuthenticatedUser(c)
     const session = await stripeService().createPortalSession(userSession.id)
     if (!session) {
-      return c.json({ error: 'Failed to create portal session' }, 500)
+      return c.json({ error: 'Failed to create portal session' }, 404)
     }
     return c.json(session)
   })
