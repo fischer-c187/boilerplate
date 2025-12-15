@@ -202,7 +202,6 @@ const stripeService = () => {
         throw new Error('Plan not found')
       }
 
-      // Valider que le status correspond à notre enum
       if (!isValidSubscriptionStatus(stripeSubscription.status)) {
         throw new Error(
           `Invalid subscription status: ${stripeSubscription.status}. Expected one of: ${VALID_SUBSCRIPTION_STATUSES.join(', ')}`
@@ -339,12 +338,12 @@ const stripeService = () => {
         data: JSON.stringify(event.data),
       })
     } catch (error) {
-      // Ignorer si déjà existe (race condition possible)
+      // Ignore duplicate key errors to handle webhook retry race conditions
       if (
         error instanceof Error &&
         (error.message?.includes('duplicate key') || error.message?.includes('unique constraint'))
       ) {
-        // Event déjà créé, on continue
+        return
       } else {
         console.error(error)
         throw new Error('Failed to create webhook event')
@@ -369,7 +368,7 @@ const stripeService = () => {
   }
 
   const processWebhookEvent = async (event: Stripe.Event) => {
-    // 1. Vérifier si déjà traité (idempotence)
+    // Ensure idempotency by checking if event was already processed
     try {
       const existingEvent = await getWebhookEvent(event.id)
       if (existingEvent?.processed) {
@@ -381,10 +380,9 @@ const stripeService = () => {
       throw new Error('Failed to get webhook event')
     }
 
-    // 2. Créer l'événement (persisté même en cas d'erreur)
+    // Persist event before processing to track failures
     await createWebhookEvent(event)
 
-    // 3. Traiter le webhook (sans transaction car 1 seule opération)
     try {
       switch (event.type) {
         case 'customer.subscription.created':
@@ -407,11 +405,10 @@ const stripeService = () => {
           break
       }
 
-      // 4. Marquer comme traité avec succès
       await markWebhookEventProcessed(event.id)
       return true
     } catch (error) {
-      // 5. Marquer l'erreur (sera persisté)
+      // Store error for debugging and retry logic
       await markWebhookEventProcessed(
         event.id,
         error instanceof Error ? error.message : 'Unknown error'
