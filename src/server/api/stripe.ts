@@ -1,5 +1,6 @@
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import type Stripe from 'stripe'
 import { z } from 'zod'
 import { getAuthenticatedUser, requireAuth } from '../middleware/auth'
 import stripeService from '../services/stripe'
@@ -52,18 +53,26 @@ const router = new Hono()
     const body = await c.req.text()
     if (!signature || !body) {
       // we need to return 200 to avoid stripe retries
-      return c.json({ error: 'No signature or body' }, 200)
+      return c.json({ error: 'No signature or body' }, 400)
+    }
+    let event: Stripe.Event | null = null
+    try {
+      event = stripeService().verifyWebhookSignature(signature, body)
+    } catch (error) {
+      console.error('Failed to verify webhook signature', error)
+      // we need to return 200 to avoid stripe retries
+      return c.json({ error: 'Failed to verify webhook signature' }, 400)
     }
     try {
-      const event = stripeService().verifyWebhookSignature(signature, body)
       const shouldProcess = await stripeService().processWebhookEvent(event)
       if (!shouldProcess) {
         return c.json({ received: true, message: 'Already processed' })
       }
       return c.json({ received: true })
-    } catch {
+    } catch (error) {
+      console.error('Failed to process webhook event', error)
       // we need to return 200 to avoid stripe retries
-      return c.json({ error: 'Failed to verify webhook signature' }, 200)
+      return c.json({ error: 'Failed to process webhook event' }, 200)
     }
   })
 export default router
