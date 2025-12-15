@@ -14,7 +14,29 @@ function SecretPage() {
   const { session } = useRouteContext({ from: '/_auth' })
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
   const user = session?.user as User | null
+
+  const handleCreateCheckoutSession = async () => {
+    setLoading(true)
+    const priceId = 'price_1Sd8W5BS3Vjd9zTqCtmpepnj'
+    try {
+      const res = await client.stripe.checkout.subscription.$post({
+        json: {
+          priceId,
+        },
+      })
+      if (!res.ok) {
+        throw new Error('Failed to create checkout session')
+      }
+      const data = (await res.json()) as { url: string }
+      setCheckoutUrl(data.url)
+    } catch (error: unknown) {
+      console.error('Error creating checkout session:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSendEmail = async () => {
     setLoading(true)
@@ -75,7 +97,7 @@ function SecretPage() {
             </p>
           </div>
         </div>
-        {
+        <div className="bg-red-50 p-4 rounded-lg">
           <button
             disabled={loading}
             onClick={() => void handleSendEmail()}
@@ -83,7 +105,21 @@ function SecretPage() {
           >
             {emailSent ? 'Email Sent' : t('button.submit')}
           </button>
-        }
+          <button
+            disabled={loading}
+            onClick={() => void handleCreateCheckoutSession()}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          >
+            Create Checkout Session
+          </button>
+          {checkoutUrl && (
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <a href={checkoutUrl} target="_blank" rel="noopener noreferrer">
+                Checkout Session URL
+              </a>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

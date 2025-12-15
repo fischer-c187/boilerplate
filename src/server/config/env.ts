@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { z } from 'zod'
 // Valide UNIQUEMENT les variables serveur
 const serverEnvSchema = z.object({
+  VITE_BASE_URL: z.string(),
   // Database
   DB_HOST: z.string().min(1),
   DB_PORT: z.coerce.number().default(5432),
@@ -18,6 +19,12 @@ const serverEnvSchema = z.object({
 
   // Mail
   MAIL_PROVIDER: z.enum(['resend']).optional(),
+
+  // Stripe
+  STRIPE_SECRET_KEY: z.string(),
+  STRIPE_PUBLIC_KEY: z.string(),
+  STRIPE_WEBHOOK_SECRET: z.string(),
+  STRIPE_API_VERSION: z.string(),
 })
 
 const parsed = serverEnvSchema.safeParse(process.env)
