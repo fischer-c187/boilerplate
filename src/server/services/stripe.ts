@@ -87,8 +87,8 @@ const stripeService = () => {
       const session = await stripe.checkout.sessions.create({
         customer: customer.stripeCustomerId,
         mode: 'subscription',
-        success_url: `${frontendUrl}/success`,
-        cancel_url: `${frontendUrl}/cancel`,
+        success_url: `${env.VITE_BASE_URL}/success`,
+        cancel_url: `${env.VITE_BASE_URL}/cancel`,
         line_items: [{ price: priceId, quantity: 1 }],
         metadata: {
           userId,
