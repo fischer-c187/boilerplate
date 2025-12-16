@@ -108,10 +108,28 @@ body {
   }
 }
 
+@keyframes slideInFromRight4 {
+  from {
+    transform: translateX(1rem);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes zoomIn95 {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
 .animate-in {
   --animate-duration: 700ms;
   --animate-delay: 0ms;
-  animation-name: var(--animate-fade, none), var(--animate-slide, none);
+  animation-name: var(--animate-fade, none), var(--animate-slide, none), var(--animate-zoom, none);
   animation-duration: var(--animate-duration);
   animation-delay: var(--animate-delay);
   animation-fill-mode: both;
@@ -132,6 +150,14 @@ body {
 
 .animate-in.slide-in-from-bottom-12 {
   --animate-slide: slideInFromBottom12;
+}
+
+.animate-in.slide-in-from-right-4 {
+  --animate-slide: slideInFromRight4;
+}
+
+.animate-in.zoom-in-95 {
+  --animate-zoom: zoomIn95;
 }
 
 .animate-in.duration-700 {
@@ -156,4 +182,8 @@ body {
 
 .animate-in.delay-500 {
   --animate-delay: 500ms;
+}
+
+.animate-in.duration-300 {
+  --animate-duration: 300ms;
 }
