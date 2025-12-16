@@ -1,19 +1,14 @@
-import Header from '@/front/components/Header'
+import { Navigation } from '@/front/components/Navigation'
 import { clientEnv } from '@/front/config/env.client'
 import appCss from '@/front/index.css?url'
 import type { RouterContext } from '@/front/router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import {
-  createRootRouteWithContext,
-  HeadContent,
-  Outlet,
-  Scripts,
-  useRouterState,
-} from '@tanstack/react-router'
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { I18nextProvider } from 'react-i18next'
 import { scan } from 'react-scan'
+import { Footer } from '../components/Footer'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
@@ -116,7 +111,6 @@ function ErrorPage({ error }: { error?: Error }) {
 
 function RootComponent() {
   const { i18n } = Route.useRouteContext()
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   useEffect(() => {
     scan({
@@ -131,11 +125,14 @@ function RootComponent() {
           <HeadContent />
         </head>
         <body>
-          {pathname !== '/' ? <Header /> : null}
-          <Outlet />
-          <TanStackRouterDevtools position="bottom-right" />
-          <ReactQueryDevtools />
-          <Scripts />
+          <div className="min-h-screen flex flex-col">
+            <Navigation />
+            <Outlet />
+            <Footer />
+            <TanStackRouterDevtools position="bottom-right" />
+            <ReactQueryDevtools />
+            <Scripts />
+          </div>
         </body>
       </html>
     </I18nextProvider>
