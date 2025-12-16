@@ -3,7 +3,8 @@ import { Link } from '@tanstack/react-router'
 import { LayoutDashboard, LogOut } from 'lucide-react'
 
 export function Navigation() {
-  const { data: session } = authClient.useSession()
+  const session = authClient.useSession()
+  const isLoggedIn = session.data?.user != null
 
   const handleLogout = async () => {
     await authClient.signOut()
@@ -43,7 +44,7 @@ export function Navigation() {
         </div>
 
         <div className="flex items-center gap-4">
-          {session?.user ? (
+          {isLoggedIn && !session.isPending && (
             <button
               onClick={() => void handleLogout()}
               className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-md text-sm font-medium hover:bg-white/90 transition-colors"
@@ -51,7 +52,8 @@ export function Navigation() {
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
             </button>
-          ) : (
+          )}
+          {!isLoggedIn && !session.isPending && (
             <>
               <Link
                 to="/login"
