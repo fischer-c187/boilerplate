@@ -1,1 +1,159 @@
 @import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-primary: #3b82f6;
+  --color-background: #0a0a0a;
+  --color-surface: #171717;
+  --color-foreground: #ededed;
+  --color-muted: #a1a1aa;
+  --color-highlight: #1e3a8a;
+  --color-accent: #8b5cf6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  /* Shadows (Custom Glows) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 0 20px -5px rgba(59, 130, 246, 0.4);
+
+  /* Radius */
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}
+
+body {
+  @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-white;
+}
+
+.glass {
+  @apply bg-surface/50 backdrop-blur-md border border-white/5;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee2 {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee2 {
+  animation: marquee2 25s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom4 {
+  from {
+    transform: translateY(1rem);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom8 {
+  from {
+    transform: translateY(2rem);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom12 {
+  from {
+    transform: translateY(3rem);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  --animate-duration: 700ms;
+  --animate-delay: 0ms;
+  animation-name: var(--animate-fade, none), var(--animate-slide, none);
+  animation-duration: var(--animate-duration);
+  animation-delay: var(--animate-delay);
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-in.fade-in {
+  --animate-fade: fadeIn;
+}
+
+.animate-in.slide-in-from-bottom-4 {
+  --animate-slide: slideInFromBottom4;
+}
+
+.animate-in.slide-in-from-bottom-8 {
+  --animate-slide: slideInFromBottom8;
+}
+
+.animate-in.slide-in-from-bottom-12 {
+  --animate-slide: slideInFromBottom12;
+}
+
+.animate-in.duration-700 {
+  --animate-duration: 700ms;
+}
+
+.animate-in.duration-1000 {
+  --animate-duration: 1000ms;
+}
+
+.animate-in.delay-100 {
+  --animate-delay: 100ms;
+}
+
+.animate-in.delay-200 {
+  --animate-delay: 200ms;
+}
+
+.animate-in.delay-300 {
+  --animate-delay: 300ms;
+}
+
+.animate-in.delay-500 {
+  --animate-delay: 500ms;
+}

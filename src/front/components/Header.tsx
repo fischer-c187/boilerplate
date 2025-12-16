@@ -42,21 +42,23 @@ export default function Header() {
           </>
         )}
 
-        <>
-          <div className="px-2 font-bold">
-            <Link to="/secret" className="relative z-10 text-purple-600 hover:text-purple-800">
-              🔒 {t('nav.profile')}
-            </Link>
-          </div>
-          <div className="px-2 font-bold">
-            <button
-              onClick={() => void handleLogout()}
-              className="relative z-10 hover:text-red-600 transition-colors cursor-pointer"
-            >
-              {t('nav.logout')}
-            </button>
-          </div>
-        </>
+        {isLoggedIn && !session.isPending && (
+          <>
+            <div className="px-2 font-bold">
+              <Link to="/secret" className="relative z-10 text-purple-600 hover:text-purple-800">
+                🔒 {t('nav.profile')}
+              </Link>
+            </div>
+            <div className="px-2 font-bold">
+              <button
+                onClick={() => void handleLogout()}
+                className="relative z-10 hover:text-red-600 transition-colors cursor-pointer"
+              >
+                {t('nav.logout')}
+              </button>
+            </div>
+          </>
+        )}
 
         <div
           className="absolute bottom-0 h-0.5 bg-blue-600 transition-opacity"

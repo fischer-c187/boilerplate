@@ -3,7 +3,13 @@ import { clientEnv } from '@/front/config/env.client'
 import appCss from '@/front/index.css?url'
 import type { RouterContext } from '@/front/router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
+import {
+  createRootRouteWithContext,
+  HeadContent,
+  Outlet,
+  Scripts,
+  useRouterState,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { I18nextProvider } from 'react-i18next'
@@ -14,10 +20,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     links: [
       { rel: 'icon', href: '/favicon.ico' },
       { rel: 'stylesheet', href: appCss },
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap',
+      },
     ],
     meta: [
       {
-        title: 'TanStack Router SSR Basic File Based Streaming',
+        title: 'boilerPPPPLATE - Ship your SaaS in days',
       },
       {
         charSet: 'UTF-8',
@@ -104,6 +116,7 @@ function ErrorPage({ error }: { error?: Error }) {
 
 function RootComponent() {
   const { i18n } = Route.useRouteContext()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   useEffect(() => {
     scan({
@@ -113,12 +126,12 @@ function RootComponent() {
 
   return (
     <I18nextProvider i18n={i18n}>
-      <html lang={i18n.language}>
+      <html lang={i18n.language} className="scroll-smooth">
         <head>
           <HeadContent />
         </head>
         <body>
-          <Header />
+          {pathname !== '/' ? <Header /> : null}
           <Outlet />
           <TanStackRouterDevtools position="bottom-right" />
           <ReactQueryDevtools />
