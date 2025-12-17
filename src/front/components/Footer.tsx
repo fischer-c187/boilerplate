@@ -7,7 +7,7 @@ export function Footer() {
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center text-white text-xs font-bold">
               B
             </div>
-            <span className="font-bold tracking-tight">boilerPPPPLATE</span>
+            <span className="font-bold tracking-tight">Drsky</span>
           </div>
           <p className="text-muted text-sm">Ship your SaaS in days, not months.</p>
         </div>
@@ -24,7 +24,7 @@ export function Footer() {
           </a>
         </div>
 
-        <p className="text-muted text-xs">© 2024 boilerPPPPLATE. All rights reserved.</p>
+        <p className="text-muted text-xs">© 2024 Drsky. All rights reserved.</p>
       </div>
     </footer>
   )
