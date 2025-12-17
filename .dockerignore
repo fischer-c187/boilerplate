@@ -1,0 +1,45 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# IDE
+.claude
+.husky
+.vscode
+.idea
+*.swp
+*.swo
+
+# Docker
+docker
+docker-compose.yml
+
+# Documentation
+README.md
+CLAUDE.md
+
+# CI/CD (not needed in image)
+.github
+
+# OS files
+.DS_Store
+Thumbs.db
+
+tasks
+docs
+design 
