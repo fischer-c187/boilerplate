@@ -24,7 +24,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
     meta: [
       {
-        title: 'boilerPPPPLATE - Ship your SaaS in days',
+        title: 'Drsky - Ship your SaaS in days',
       },
       {
         charSet: 'UTF-8',
@@ -126,7 +126,9 @@ function RootComponent() {
         </head>
         <body>
           <div className="min-h-screen flex flex-col">
-            <Navigation />
+            <header>
+              <Navigation />
+            </header>
             <Outlet />
             <Footer />
             <TanStackRouterDevtools position="bottom-right" />

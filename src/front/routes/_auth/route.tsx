@@ -1,7 +1,7 @@
 import { authClient } from '@/shared/api-client/auth/auth.api'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 
-// Définir le type du context
+// Define auth context type
 export type AuthContext = {
   session: Awaited<ReturnType<typeof authClient.getSession>>['data']
 }
