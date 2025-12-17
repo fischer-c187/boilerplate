@@ -43,7 +43,7 @@ export function Navigation() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 min-w-[200px] justify-end">
           {isLoggedIn && !session.isPending && (
             <button
               onClick={() => void handleLogout()}
