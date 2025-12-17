@@ -1,8 +1,10 @@
+import { SocialLoginButtons } from '@/front/features/auth/SocialLoginButtons'
 import { authClient } from '@/shared/api-client/auth/auth.api'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
+import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 
-export function LoginForm({ redirectTo = '/' }: { redirectTo?: string }) {
+export function LoginForm({ redirectTo = '/client' }: { redirectTo?: string }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -34,18 +36,21 @@ export function LoginForm({ redirectTo = '/' }: { redirectTo?: string }) {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Log In</h1>
+    <>
+      <SocialLoginButtons />
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div className="bg-danger/10 border border-danger/20 text-danger px-4 py-3 rounded-lg text-sm">
             {error}
           </div>
         )}
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2">
+        <div className="space-y-2">
+          <label
+            htmlFor="email"
+            className="text-xs font-medium text-muted uppercase tracking-wider"
+          >
             Email
           </label>
           <input
@@ -54,22 +59,30 @@ export function LoginForm({ redirectTo = '/' }: { redirectTo?: string }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="you@example.com"
+            className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-black/20 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none placeholder:text-muted/50"
+            placeholder="name@example.com"
           />
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-2">
-            Password
-          </label>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="password"
+              className="text-xs font-medium text-muted uppercase tracking-wider"
+            >
+              Password
+            </label>
+            <a href="#" className="text-xs text-primary hover:text-primary/80 transition-colors">
+              Forgot?
+            </a>
+          </div>
           <input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-black/20 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none placeholder:text-muted/50"
             placeholder="••••••••"
           />
         </div>
@@ -77,18 +90,24 @@ export function LoginForm({ redirectTo = '/' }: { redirectTo?: string }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full bg-primary text-white py-3 rounded-lg font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Logging in...' : 'Log In'}
+          <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
-
-        <p className="text-sm text-center text-gray-600">
-          Don&apos;t have an account?{' '}
-          <Link to="/signup" className="text-blue-600 hover:underline">
-            Sign up
-          </Link>
-        </p>
       </form>
-    </div>
+
+      <p className="mt-6 text-center text-sm text-muted">
+        By continuing, you agree to our{' '}
+        <a href="#" className="text-white hover:underline">
+          Terms
+        </a>{' '}
+        and{' '}
+        <a href="#" className="text-white hover:underline">
+          Privacy Policy
+        </a>
+        .
+      </p>
+    </>
   )
 }

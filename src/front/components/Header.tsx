@@ -27,36 +27,40 @@ export default function Header() {
             Client
           </Link>
         </div>
-        {!isLoggedIn && !session.isPending && (
-          <>
-            <div className="px-2 font-bold">
-              <Link to="/signup" className="relative z-10">
-                Sign Up
-              </Link>
-            </div>
-            <div className="px-2 font-bold">
-              <Link to="/login" className="relative z-10">
-                {t('nav.login')}
-              </Link>
-            </div>
-          </>
-        )}
+        <div className="flex flex-row min-w-[180px]">
+          {!isLoggedIn && !session.isPending && (
+            <>
+              <div className="px-2 font-bold">
+                <Link to="/signup" className="relative z-10">
+                  Sign Up
+                </Link>
+              </div>
+              <div className="px-2 font-bold">
+                <Link to="/login" className="relative z-10">
+                  {t('nav.login')}
+                </Link>
+              </div>
+            </>
+          )}
 
-        <>
-          <div className="px-2 font-bold">
-            <Link to="/secret" className="relative z-10 text-purple-600 hover:text-purple-800">
-              🔒 {t('nav.profile')}
-            </Link>
-          </div>
-          <div className="px-2 font-bold">
-            <button
-              onClick={() => void handleLogout()}
-              className="relative z-10 hover:text-red-600 transition-colors cursor-pointer"
-            >
-              {t('nav.logout')}
-            </button>
-          </div>
-        </>
+          {isLoggedIn && !session.isPending && (
+            <>
+              <div className="px-2 font-bold">
+                <Link to="/secret" className="relative z-10 text-purple-600 hover:text-purple-800">
+                  🔒 {t('nav.profile')}
+                </Link>
+              </div>
+              <div className="px-2 font-bold">
+                <button
+                  onClick={() => void handleLogout()}
+                  className="relative z-10 hover:text-red-600 transition-colors cursor-pointer"
+                >
+                  {t('nav.logout')}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
 
         <div
           className="absolute bottom-0 h-0.5 bg-blue-600 transition-opacity"

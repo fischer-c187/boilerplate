@@ -1,4 +1,4 @@
-import Header from '@/front/components/Header'
+import { Navigation } from '@/front/components/Navigation'
 import { clientEnv } from '@/front/config/env.client'
 import appCss from '@/front/index.css?url'
 import type { RouterContext } from '@/front/router'
@@ -8,16 +8,23 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { useEffect } from 'react'
 import { I18nextProvider } from 'react-i18next'
 import { scan } from 'react-scan'
+import { Footer } from '../components/Footer'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     links: [
       { rel: 'icon', href: '/favicon.ico' },
       { rel: 'stylesheet', href: appCss },
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap',
+      },
     ],
     meta: [
       {
-        title: 'TanStack Router SSR Basic File Based Streaming',
+        title: 'Drsky - Ship your SaaS in days',
       },
       {
         charSet: 'UTF-8',
@@ -113,16 +120,21 @@ function RootComponent() {
 
   return (
     <I18nextProvider i18n={i18n}>
-      <html lang={i18n.language}>
+      <html lang={i18n.language} className="scroll-smooth">
         <head>
           <HeadContent />
         </head>
         <body>
-          <Header />
-          <Outlet />
-          <TanStackRouterDevtools position="bottom-right" />
-          <ReactQueryDevtools />
-          <Scripts />
+          <div className="min-h-screen flex flex-col">
+            <header>
+              <Navigation />
+            </header>
+            <Outlet />
+            <Footer />
+            <TanStackRouterDevtools position="bottom-right" />
+            <ReactQueryDevtools />
+            <Scripts />
+          </div>
         </body>
       </html>
     </I18nextProvider>

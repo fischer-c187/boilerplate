@@ -1,0 +1,634 @@
+<!-- Dash Page Container -->
+<div class="min-h-screen p-6 md:p-12">
+  <!-- Header -->
+  <div class="max-w-6xl mx-auto mb-12">
+    <div class="flex items-center gap-3 mb-4">
+      <div
+        class="w-12 h-12 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center"
+      >
+        <i data-lucide="layout-dashboard" class="w-6 h-6 text-primary"></i>
+      </div>
+      <div>
+        <h1 class="text-4xl font-bold tracking-tight">Dash</h1>
+        <p class="text-muted text-sm mt-1">
+          Quick playground to test your boilerplate integrations
+        </p>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div
+      class="glass rounded-xl p-4 flex flex-wrap gap-4 items-center justify-between"
+    >
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-success animate-pulse"></div>
+        <span class="text-sm text-muted">Sandbox UI · actions are safe</span>
+      </div>
+
+      <div class="flex flex-wrap gap-2 text-xs font-mono text-muted">
+        <span
+          class="px-2 py-1 rounded-md border border-white/10 bg-black/20 flex items-center gap-2"
+        >
+          <i data-lucide="mail" class="w-3 h-3"></i>
+          <span>Email</span>
+        </span>
+        <span
+          class="px-2 py-1 rounded-md border border-white/10 bg-black/20 flex items-center gap-2"
+        >
+          <i data-lucide="credit-card" class="w-3 h-3"></i>
+          <span>Stripe</span>
+        </span>
+        <span
+          class="px-2 py-1 rounded-md border border-white/10 bg-black/20 flex items-center gap-2"
+        >
+          <i data-lucide="server" class="w-3 h-3"></i>
+          <span>API</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left: Cards -->
+    <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Email -->
+      <div
+        class="glass rounded-xl p-6 hover:border-primary/30 transition-all group"
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-primary/20 transition-all"
+            >
+              <i data-lucide="mail" class="w-5 h-5 text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">Email</h3>
+              <p class="text-xs text-muted">Send a test email payload</p>
+            </div>
+          </div>
+          <span
+            class="px-2 py-1 text-xs font-mono bg-success/10 text-success border border-success/20 rounded"
+            >Ready</span
+          >
+        </div>
+
+        <form class="space-y-4" onsubmit="dashSendEmail(event)">
+          <div class="space-y-2">
+            <label class="text-xs font-medium text-muted uppercase tracking-wider"
+              >Recipient</label
+            >
+            <input
+              type="email"
+              name="to"
+              placeholder="test@example.com"
+              class="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-black/20 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none placeholder:text-muted/50"
+              required
+            />
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-xs font-medium text-muted uppercase tracking-wider"
+              >Template</label
+            >
+            <select
+              name="template"
+              class="w-full px-4 py-2.5 rounded-lg border border-white/10 bg-black/20 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none text-foreground"
+            >
+              <option value="welcome">welcome</option>
+              <option value="reset-password">reset-password</option>
+              <option value="invoice">invoice</option>
+              <option value="notification">notification</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-primary text-white py-2.5 rounded-lg font-medium shadow-md shadow-primary/20 hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          >
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>Send</span>
+          </button>
+        </form>
+
+        <div id="dash-email-result" class="mt-4 hidden"></div>
+      </div>
+
+      <!-- Stripe -->
+      <div
+        class="glass rounded-xl p-6 hover:border-accent/30 transition-all group"
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-accent/20 transition-all"
+            >
+              <i data-lucide="credit-card" class="w-5 h-5 text-accent"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">Stripe</h3>
+              <p class="text-xs text-muted">Create a checkout session</p>
+            </div>
+          </div>
+          <span
+            class="px-2 py-1 text-xs font-mono bg-warning/10 text-warning border border-warning/20 rounded"
+            >Test Mode</span
+          >
+        </div>
+
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <label class="text-xs font-medium text-muted uppercase tracking-wider"
+              >Plan</label
+            >
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onclick="dashSelectPlan('hobby', 29, this)"
+                class="dash-plan-btn px-3 py-2 rounded-lg border border-white/10 bg-black/20 hover:border-accent/50 transition-all text-center"
+              >
+                <div class="text-sm font-semibold">Hobby</div>
+                <div class="text-xs text-muted">$29</div>
+              </button>
+              <button
+                type="button"
+                onclick="dashSelectPlan('pro', 79, this)"
+                class="dash-plan-btn px-3 py-2 rounded-lg border border-white/10 bg-black/20 hover:border-accent/50 transition-all text-center"
+              >
+                <div class="text-sm font-semibold">Pro</div>
+                <div class="text-xs text-muted">$79</div>
+              </button>
+              <button
+                type="button"
+                onclick="dashSelectPlan('agency', 199, this)"
+                class="dash-plan-btn px-3 py-2 rounded-lg border border-white/10 bg-black/20 hover:border-accent/50 transition-all text-center"
+              >
+                <div class="text-sm font-semibold">Agency</div>
+                <div class="text-xs text-muted">$199</div>
+              </button>
+            </div>
+          </div>
+
+          <button
+            id="dash-stripe-checkout-btn"
+            onclick="dashStripeCheckout()"
+            disabled
+            class="w-full bg-accent text-white py-2.5 rounded-lg font-medium shadow-md shadow-accent/20 hover:bg-accent/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+            <span>Open Checkout</span>
+          </button>
+
+          <div class="flex gap-2">
+            <button
+              type="button"
+              onclick="dashStripeWebhook()"
+              class="flex-1 bg-surface border border-white/10 text-muted py-2 rounded-lg text-sm hover:border-accent/30 hover:text-accent transition-all"
+            >
+              Test webhook
+            </button>
+            <button
+              type="button"
+              onclick="dashStripePortal()"
+              class="flex-1 bg-surface border border-white/10 text-muted py-2 rounded-lg text-sm hover:border-accent/30 hover:text-accent transition-all"
+            >
+              Customer portal
+            </button>
+          </div>
+        </div>
+
+        <div id="dash-stripe-result" class="mt-4 hidden"></div>
+      </div>
+
+      <!-- Quick API buttons -->
+      <div
+        class="glass rounded-xl p-6 hover:border-primary/30 transition-all group md:col-span-2"
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-primary/20 transition-all"
+            >
+              <i data-lucide="zap" class="w-5 h-5 text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">API Quick Tests</h3>
+              <p class="text-xs text-muted">Ping common endpoints</p>
+            </div>
+          </div>
+          <span
+            class="px-2 py-1 text-xs font-mono bg-success/10 text-success border border-success/20 rounded"
+            >Runner</span
+          >
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button
+            type="button"
+            onclick="dashRunRequest('GET','/api/health')"
+            class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-white/10 bg-black/20 hover:border-success/50 transition-all text-sm group/btn"
+          >
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-success"></span>
+              <span>GET /api/health</span>
+            </div>
+            <i data-lucide="play" class="w-3 h-3 text-muted"></i>
+          </button>
+          <button
+            type="button"
+            onclick="dashRunRequest('GET','/api/status')"
+            class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-white/10 bg-black/20 hover:border-success/50 transition-all text-sm group/btn"
+          >
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-success"></span>
+              <span>GET /api/status</span>
+            </div>
+            <i data-lucide="play" class="w-3 h-3 text-muted"></i>
+          </button>
+          <button
+            type="button"
+            onclick="dashRunRequest('POST','/api/webhooks/stripe',{event:'payment_intent.succeeded'})"
+            class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-white/10 bg-black/20 hover:border-accent/50 transition-all text-sm group/btn"
+          >
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-accent"></span>
+              <span>POST /api/webhooks/stripe</span>
+            </div>
+            <i data-lucide="play" class="w-3 h-3 text-muted"></i>
+          </button>
+        </div>
+
+        <div id="dash-api-quick-result" class="mt-4 hidden"></div>
+      </div>
+    </div>
+
+    <!-- Right: Logs + custom runner -->
+    <div class="lg:col-span-1 space-y-6">
+      <div class="glass rounded-xl p-6 hover:border-muted/30 transition-all">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-muted/20 border border-muted/30 flex items-center justify-center"
+            >
+              <i data-lucide="terminal" class="w-5 h-5 text-muted"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">Logs</h3>
+              <p class="text-xs text-muted">Dash activity output</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="dashClearLogs()"
+            class="px-3 py-1.5 text-xs font-medium text-muted hover:text-danger border border-white/10 rounded-lg hover:border-danger/30 transition-all"
+          >
+            Clear
+          </button>
+        </div>
+
+        <div
+          id="dash-logs"
+          class="h-56 overflow-y-auto bg-black/40 border border-white/5 rounded-lg p-4 font-mono text-xs space-y-1 no-scrollbar"
+        >
+          <div class="text-muted">
+            <span class="text-success">[SYSTEM]</span> Dash ready
+          </div>
+        </div>
+      </div>
+
+      <div class="glass rounded-xl p-6 hover:border-primary/30 transition-all">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center"
+            >
+              <i data-lucide="radar" class="w-5 h-5 text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg">API Runner</h3>
+              <p class="text-xs text-muted">Run a custom request</p>
+            </div>
+          </div>
+        </div>
+
+        <form class="space-y-3" onsubmit="dashRunCustom(event)">
+          <div class="grid grid-cols-3 gap-2">
+            <select
+              name="method"
+              class="col-span-1 w-full px-3 py-2.5 rounded-lg border border-white/10 bg-black/20 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none text-foreground font-mono text-xs"
+            >
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>DELETE</option>
+            </select>
+            <input
+              name="path"
+              placeholder="/api/health"
+              class="col-span-2 w-full px-3 py-2.5 rounded-lg border border-white/10 bg-black/20 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none placeholder:text-muted/50 font-mono text-xs"
+              required
+            />
+          </div>
+
+          <textarea
+            name="body"
+            rows="4"
+            placeholder='{"hello":"world"} (optional)'
+            class="w-full px-3 py-2.5 rounded-lg border border-white/10 bg-black/20 focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none placeholder:text-muted/50 font-mono text-xs"
+          ></textarea>
+
+          <button
+            type="submit"
+            class="w-full bg-foreground text-background py-2.5 rounded-lg font-medium hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          >
+            <i data-lucide="play" class="w-4 h-4"></i>
+            <span>Run</span>
+          </button>
+        </form>
+
+        <div id="dash-api-result" class="mt-4 hidden"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const stateKey = "__boilerDashState";
+    const state =
+      window[stateKey] ||
+      (window[stateKey] = {
+        selectedPlan: null,
+        selectedPrice: null,
+      });
+
+    const colors = {
+      success: "text-success",
+      error: "text-danger",
+      info: "text-primary",
+      warning: "text-warning",
+    };
+
+    function safeText(value) {
+      return typeof value === "string" ? value : JSON.stringify(value);
+    }
+
+    window.dashAddLog = function dashAddLog(type, message) {
+      const container = document.getElementById("dash-logs");
+      if (!container) return;
+
+      const timestamp = new Date().toLocaleTimeString();
+      const log = document.createElement("div");
+      log.className = "text-muted animate-in fade-in slide-in-from-left-2";
+      log.innerHTML = `<span class="${colors[type] || colors.info}">[${String(
+        type
+      ).toUpperCase()}]</span> ${timestamp} - ${safeText(message)}`;
+      container.appendChild(log);
+      container.scrollTop = container.scrollHeight;
+    };
+
+    window.dashShowResult = function dashShowResult(elementId, type, message) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      const variants = {
+        success: "bg-success/10 border-success/30 text-success",
+        error: "bg-danger/10 border-danger/30 text-danger",
+        info: "bg-primary/10 border-primary/30 text-primary",
+        warning: "bg-warning/10 border-warning/30 text-warning",
+      };
+
+      el.className = `mt-4 p-3 rounded-lg border text-sm ${
+        variants[type] || variants.info
+      } animate-in fade-in slide-in-from-top-2`;
+      el.textContent = safeText(message);
+      el.classList.remove("hidden");
+
+      window.clearTimeout(el.__hideTimer);
+      el.__hideTimer = window.setTimeout(() => {
+        el.classList.add("hidden");
+      }, 6000);
+    };
+
+    window.dashClearLogs = function dashClearLogs() {
+      const container = document.getElementById("dash-logs");
+      if (!container) return;
+      container.innerHTML =
+        '<div class="text-muted"><span class="text-success">[SYSTEM]</span> Logs cleared</div>';
+      window.dashAddLog("info", "Ready for new tests");
+    };
+
+	    window.dashSendEmail = async function dashSendEmail(event) {
+	      event.preventDefault();
+
+      const formData = new FormData(event.target);
+      const to = String(formData.get("to") || "");
+      const template = String(formData.get("template") || "welcome");
+
+	      window.dashAddLog("info", `Sending ${template} email to ${to}...`);
+
+	      try {
+	        const response = await fetch("/api/email/send", {
+	          method: "POST",
+	          headers: { "content-type": "application/json" },
+	          body: JSON.stringify({ to, template }),
+	        });
+
+	        if (response.status === 404) throw new Error("Email endpoint not found");
+
+	        const text = await response.text();
+	        if (!response.ok) {
+	          window.dashAddLog("error", `Email API error (${response.status})`);
+	          window.dashShowResult(
+            "dash-email-result",
+            "error",
+            text || `Request failed (${response.status})`
+          );
+          return;
+        }
+
+        window.dashAddLog("success", "Email request accepted");
+        window.dashShowResult(
+          "dash-email-result",
+          "success",
+          text || `✓ Email queued for ${to}`
+        );
+      } catch (error) {
+        window.dashAddLog("warning", "No backend detected, simulating send…");
+        window.setTimeout(() => {
+          const success = Math.random() > 0.15;
+          if (success) {
+            window.dashAddLog("success", `Email sent (simulated) to ${to}`);
+            window.dashShowResult(
+              "dash-email-result",
+              "success",
+              `✓ ${template} delivered to ${to} (simulated)`
+            );
+          } else {
+            window.dashAddLog("error", `Email failed (simulated) to ${to}`);
+            window.dashShowResult(
+              "dash-email-result",
+              "error",
+              "✗ Email delivery failed. Check SMTP configuration."
+            );
+          }
+        }, 900);
+      }
+    };
+
+    window.dashSelectPlan = function dashSelectPlan(plan, price, button) {
+      state.selectedPlan = plan;
+      state.selectedPrice = price;
+
+      document.querySelectorAll(".dash-plan-btn").forEach((btn) => {
+        btn.classList.remove("border-accent", "bg-accent/10");
+        btn.classList.add("border-white/10", "bg-black/20");
+      });
+
+      if (button) {
+        button.classList.remove("border-white/10", "bg-black/20");
+        button.classList.add("border-accent", "bg-accent/10");
+      }
+
+      const checkoutBtn = document.getElementById("dash-stripe-checkout-btn");
+      if (checkoutBtn) checkoutBtn.disabled = false;
+
+      window.dashAddLog("info", `Selected ${plan} plan ($${price}/mo)`);
+    };
+
+	    window.dashStripeCheckout = async function dashStripeCheckout() {
+	      if (!state.selectedPlan) return;
+
+      window.dashAddLog(
+        "info",
+        `Creating Stripe checkout for ${state.selectedPlan}...`
+      );
+
+	      try {
+	        const response = await fetch("/api/stripe/checkout", {
+	          method: "POST",
+	          headers: { "content-type": "application/json" },
+	          body: JSON.stringify({ plan: state.selectedPlan }),
+	        });
+
+	        if (response.status === 404)
+	          throw new Error("Stripe checkout endpoint not found");
+
+	        const text = await response.text();
+	        if (!response.ok) {
+	          window.dashAddLog("error", `Stripe API error (${response.status})`);
+	          window.dashShowResult(
+            "dash-stripe-result",
+            "error",
+            text || `Request failed (${response.status})`
+          );
+          return;
+        }
+
+        window.dashAddLog("success", "Checkout session created");
+        window.dashShowResult(
+          "dash-stripe-result",
+          "success",
+          text || `✓ Checkout URL generated for ${state.selectedPlan}`
+        );
+      } catch (error) {
+        window.dashAddLog("warning", "No backend detected, simulating checkout…");
+        window.setTimeout(() => {
+          window.dashAddLog("success", "Checkout session created (simulated)");
+          window.dashShowResult(
+            "dash-stripe-result",
+            "success",
+            `✓ Checkout URL generated for ${state.selectedPlan} ($${state.selectedPrice}/mo) (simulated)`
+          );
+        }, 800);
+      }
+    };
+
+    window.dashStripeWebhook = function dashStripeWebhook() {
+      window.dashAddLog("info", "Triggering Stripe webhook test…");
+      window.setTimeout(() => {
+        window.dashAddLog("success", "Webhook processed: payment_intent.succeeded");
+        window.dashShowResult(
+          "dash-stripe-result",
+          "success",
+          "✓ Webhook processed successfully"
+        );
+      }, 700);
+    };
+
+    window.dashStripePortal = function dashStripePortal() {
+      window.dashAddLog("info", "Opening customer portal…");
+      window.setTimeout(() => {
+        window.dashAddLog("success", "Portal URL generated (simulated)");
+        window.dashShowResult(
+          "dash-stripe-result",
+          "info",
+          "✓ Portal URL generated (simulated)"
+        );
+      }, 600);
+    };
+
+    window.dashRunRequest = async function dashRunRequest(method, path, body) {
+      const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+      window.dashAddLog("info", `${method} ${normalizedPath}`);
+
+      try {
+        const options = { method, headers: {} };
+        if (body && method !== "GET" && method !== "HEAD") {
+          options.headers["content-type"] = "application/json";
+          options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(normalizedPath, options);
+        const text = await response.text();
+        const ok = response.ok;
+
+        window.dashAddLog(ok ? "success" : "error", `${method} → ${response.status}`);
+        window.dashShowResult(
+          "dash-api-quick-result",
+          ok ? "success" : "error",
+          text || `${response.status} ${response.statusText}`
+        );
+      } catch (error) {
+        window.dashAddLog("error", "Request failed (no backend?)");
+        window.dashShowResult(
+          "dash-api-quick-result",
+          "error",
+          String(error && error.message ? error.message : error)
+        );
+      }
+    };
+
+    window.dashRunCustom = async function dashRunCustom(event) {
+      event.preventDefault();
+
+      const formData = new FormData(event.target);
+      const method = String(formData.get("method") || "GET").toUpperCase();
+      const path = String(formData.get("path") || "/");
+      const bodyText = String(formData.get("body") || "").trim();
+
+      let body;
+      if (bodyText) {
+        try {
+          body = JSON.parse(bodyText);
+        } catch (error) {
+          window.dashShowResult(
+            "dash-api-result",
+            "warning",
+            "Body is not valid JSON. Sending as raw text."
+          );
+        }
+      }
+
+      const sendBody =
+        method !== "GET" && method !== "HEAD" && bodyText
+          ? body ?? bodyText
+          : undefined;
+
+      await window.dashRunRequest(method, path, sendBody);
+    };
+
+    window.dashAddLog("info", "Dash loaded");
+  })();
+</script>

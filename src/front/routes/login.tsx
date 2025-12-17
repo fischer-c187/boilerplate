@@ -1,21 +1,18 @@
-import { LoginForm } from '@/front/components/form/LoginForm'
+import { AuthPage } from '@/front/features/auth/AuthPage'
 import { createFileRoute } from '@tanstack/react-router'
 import z from 'zod'
 
 const searchSchema = z.object({
   redirectTo: z.string().optional(),
 })
+
 export const Route = createFileRoute('/login')({
   validateSearch: searchSchema,
-  component: LoginPage,
+  component: LoginRoute,
 })
 
-function LoginPage() {
+function LoginRoute() {
   const { redirectTo } = Route.useSearch()
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <LoginForm redirectTo={redirectTo} />
-    </div>
-  )
+  return <AuthPage redirectTo={redirectTo} />
 }
