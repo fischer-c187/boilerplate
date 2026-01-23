@@ -6,7 +6,7 @@ dist
 
 # Git
 .git
-.gitignore
+ .gitignore
 
 # Environment files
 .env
