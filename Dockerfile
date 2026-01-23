@@ -1,73 +1,63 @@
-# Stage 1: Builder - Build the application
+# Stage 1: Builder
 FROM node:24-alpine AS builder
 
-# Install pnpm globally
+# Bonne pratique : pinner la version de pnpm pour éviter les surprises (v9 ou v10)
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy dependency files
 COPY package.json pnpm-lock.yaml ./
 
-# Disable Husky in Docker (no need for git hooks)
+# Disable Husky
 ENV HUSKY=0
 
-# Install all dependencies (including devDependencies for build)
+# On installe TOUT ici pour pouvoir builder
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
 COPY . .
 
-# Build args for Vite environment variables
 ARG VITE_BASE_URL
 
-# Build application (client + server + types)
 RUN pnpm run build
 
-# Stage 2: Runner - Production image
+# Stage 2: Runner
 FROM node:24-alpine AS runner
 
-# Install pnpm globally
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy dependency files
-COPY package.json pnpm-lock.yaml ./
-
-# Install ONLY production dependencies (skip scripts like husky prepare)
-RUN pnpm install --frozen-lockfile
-
-# Copy build outputs from builder stage
-COPY --from=builder /app/dist ./dist
-
-# Copy drizzle config and migration script (needed for db:migrate)
-COPY --from=builder /app/src/server/adaptaters/db/drizzle.config.ts ./src/server/adaptaters/db/drizzle.config.ts
-COPY --from=builder /app/drizzle ./drizzle
-
-# Copy entrypoint script and make it executable
-COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-# create non-root user for security
-RUN addgroup -g 1001 -S rick
-RUN adduser -S rick -u 1001 -G rick
-
-# Change ownership of the app directory and entrypoint to the non-root user
-RUN chown -R rick:rick /app
-RUN chown rick:rick /usr/local/bin/docker-entrypoint.sh
-
-# Switch to the non-root user
-USER rick
-
-# Expose application port
-EXPOSE 3000
-
-# Set environment to production
+# 1. On définit la prod tout de suite
 ENV NODE_ENV=production
 
-# Use entrypoint script to run migrations before starting app
+# 2. Création de l'utilisateur AVANT de copier les fichiers
+RUN addgroup -g 1001 -S rick && \
+  adduser -S rick -u 1001 -G rick
+
+# 3. Copie des fichiers de dépendances avec les bonnes permissions
+COPY --chown=rick:rick package.json pnpm-lock.yaml ./
+
+# 4. Installation UNIQUEMENT des dépendances de prod (--prod)
+# Le --frozen-lockfile garantit qu'on respecte le lock
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
+
+# 5. Copie du build depuis le builder avec les permissions
+COPY --chown=rick:rick --from=builder /app/dist ./dist
+
+# Copie des configs Drizzle
+COPY --chown=rick:rick --from=builder /app/src/server/adaptaters/db/drizzle.config.ts ./src/server/adaptaters/db/drizzle.config.ts
+COPY --chown=rick:rick --from=builder /app/drizzle ./drizzle
+
+# Copie du script d'entrypoint
+COPY --chown=rick:rick scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Plus besoin de chown -R /app ici, c'est déjà fait au fur et à mesure !
+
+USER rick
+
+EXPOSE 3000
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 
-# Start the application
 CMD ["pnpm", "start"]
