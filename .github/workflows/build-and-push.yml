@@ -47,6 +47,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate TanStack Router route tree
+        run: pnpm dlx @tanstack/router-cli@latest generate
+
       - name: Run lint
         run: pnpm run lint
 
