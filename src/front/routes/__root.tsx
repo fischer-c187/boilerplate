@@ -1,5 +1,4 @@
 import { Navigation } from '@/front/components/Navigation'
-import { clientEnv } from '@/front/config/env.client'
 import appCss from '@/front/index.css?url'
 import type { RouterContext } from '@/front/router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -35,7 +34,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
     ],
     scripts: [
-      ...(!clientEnv.PROD
+      ...(!import.meta.env.PROD
         ? [
             {
               type: 'module',
@@ -53,7 +52,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         : []),
       {
         type: 'module',
-        src: clientEnv.PROD ? '/assets/entry-client.js' : '/src/front/entry-client.tsx',
+        src: import.meta.env.PROD ? '/assets/entry-client.js' : '/src/front/entry-client.tsx',
       },
     ],
   }),
@@ -113,9 +112,12 @@ function RootComponent() {
   const { i18n } = Route.useRouteContext()
 
   useEffect(() => {
-    scan({
-      enabled: true,
-    })
+    // Only run react-scan on client side
+    if (typeof window !== 'undefined' && !import.meta.env.PROD) {
+      scan({
+        enabled: true,
+      })
+    }
   }, [])
 
   return (
@@ -131,8 +133,12 @@ function RootComponent() {
             </header>
             <Outlet />
             <Footer />
-            <TanStackRouterDevtools position="bottom-right" />
-            <ReactQueryDevtools />
+            {!import.meta.env.PROD && (
+              <>
+                <TanStackRouterDevtools position="bottom-right" />
+                <ReactQueryDevtools />
+              </>
+            )}
             <Scripts />
           </div>
         </body>

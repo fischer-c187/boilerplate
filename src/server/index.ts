@@ -25,7 +25,7 @@ const allowedOrigin = env.CORS_ORIGIN || '*'
 app.use(
   cors({
     origin: allowedOrigin,
-    credentials: true,
+    credentials: allowedOrigin !== '*',
   })
 )
 
@@ -36,8 +36,9 @@ app.route('/api', apiApp)
 if (env.NODE_ENV === 'production') {
   app.use(compress())
 
+  // Serve static assets from client build
   app.use(
-    '/*',
+    '/assets/*',
     serveStatic({
       root: './dist/client',
     })

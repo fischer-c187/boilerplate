@@ -3,6 +3,7 @@ import { z } from 'zod'
 // Valide UNIQUEMENT les variables serveur
 const serverEnvSchema = z.object({
   VITE_BASE_URL: z.string(),
+
   // Database
   DB_HOST: z.string().min(1),
   DB_PORT: z.coerce.number().default(5432),
@@ -13,7 +14,9 @@ const serverEnvSchema = z.object({
   // Server
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   NODE_SERVER_PORT: z.coerce.number().default(3000),
-  NODE_SERVER_HOST: z.string().default('localhost'),
+  NODE_SERVER_HOST: z
+    .string()
+    .default(process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost'),
   CORS_ORIGIN: z.string().default('*'),
   API_URL: z.string().url().optional(),
 
