@@ -38,7 +38,7 @@ if (env.NODE_ENV === 'production') {
 
   // Serve static assets from client build
   app.use(
-    '*',
+    '/assets/*',
     serveStatic({
       root: './dist/client',
     })
