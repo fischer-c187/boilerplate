@@ -4,12 +4,14 @@ import { Hono } from 'hono'
 const router = new Hono().get('/mail/test', async (c) => {
   try {
     await mailer.sendEmail({ to: 'test@test.com', subject: 'Test', html: '<p>Hello, world!</p>' })
-    return c.json({ message: 'Email sent' })
+    return c.json({ message: 'Email sent' }, 200)
   } catch (error) {
     return c.json(
       {
-        message: 'Error sending email',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
       },
       500
     )
