@@ -5,7 +5,7 @@ import { auth } from '../adaptaters/auth/auth'
 export const requireAuth = createMiddleware(async (c, next) => {
   const userSession = await auth.api.getSession(c.req.raw)
   if (!userSession?.user) {
-    return c.json({ error: 'Unauthorized' }, 401)
+    return c.json({ error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }, 401)
   }
   c.set('user', userSession.user)
   await next()
