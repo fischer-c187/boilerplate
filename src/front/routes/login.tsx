@@ -1,4 +1,5 @@
 import { AuthPage } from '@/front/features/auth/AuthPage'
+import { buildSeoMeta } from '@/front/lib/seo'
 import { createFileRoute } from '@tanstack/react-router'
 import z from 'zod'
 
@@ -8,6 +9,13 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute('/login')({
   validateSearch: searchSchema,
+  head: () => ({
+    meta: buildSeoMeta({
+      title: 'Login',
+      description: 'Sign in to your account',
+      url: '/login',
+    }),
+  }),
   component: LoginRoute,
 })
 
