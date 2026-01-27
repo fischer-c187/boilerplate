@@ -1,10 +1,11 @@
-import { LayoutDashboard, Mail, CreditCard, Server } from 'lucide-react'
+import { LayoutDashboard, Mail, CreditCard, Server, Bell } from 'lucide-react'
 import { useDashLogs } from './hooks/useDashLogs'
 import { EmailTestCard } from './components/EmailTestCard'
 import { StripeTestCard } from './components/StripeTestCard'
 import { ApiQuickTestsCard } from './components/ApiQuickTestsCard'
 import { LogsPanel } from './components/LogsPanel'
 import { ApiRunnerCard } from './components/ApiRunnerCard'
+import { ToastTestCard } from './components/ToastTestCard'
 
 export function DashboardPage() {
   const { logs, addLog, clearLogs } = useDashLogs()
@@ -45,6 +46,10 @@ export function DashboardPage() {
               <Server className="w-3 h-3" />
               <span>API</span>
             </span>
+            <span className="px-2 py-1 rounded-md border border-white/10 bg-black/20 flex items-center gap-2">
+              <Bell className="w-3 h-3" />
+              <span>Toast</span>
+            </span>
           </div>
         </div>
       </div>
@@ -56,6 +61,7 @@ export function DashboardPage() {
           <EmailTestCard addLog={addLog} />
           <StripeTestCard addLog={addLog} />
           <ApiQuickTestsCard addLog={addLog} />
+          <ToastTestCard />
         </div>
 
         {/* Right: Logs + custom runner */}

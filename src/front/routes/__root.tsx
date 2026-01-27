@@ -1,4 +1,5 @@
 import { Navigation } from '@/front/components/Navigation'
+import { Toaster } from '@/front/components/ui/sonner'
 import appCss from '@/front/index.css?url'
 import type { RouterContext } from '@/front/router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -141,6 +142,7 @@ function RootComponent() {
             )}
             <Scripts />
           </div>
+          <Toaster />
         </body>
       </html>
     </I18nextProvider>
