@@ -1,25 +1,29 @@
 import { env } from '@/server/config/env'
-import { localTransport } from './transports/local'
+import { smtpTransport } from './transports/smtp'
+import { resendTransport } from './transports/resend'
 import type { Mailer, Provider } from './types'
 
 function createMailer(): Mailer {
-  if (env.NODE_ENV === 'development') {
-    return localTransport()
+  const provider = env.MAIL_PROVIDER as Provider | undefined
+  const isDev = env.NODE_ENV === 'development'
+  // Dev: default to smtp if not set
+  if (isDev && !provider) {
+    return smtpTransport()
   }
 
-  const provider = env.MAIL_PROVIDER as Provider
-
-  if (!provider) {
-    throw new Error('MAIL_PROVIDER is not set')
+  // Prod: require explicit provider
+  if (!isDev && !provider) {
+    throw new Error('MAIL_PROVIDER must be set in production')
   }
 
-  switch (provider as Provider) {
+  switch (provider) {
+    case 'smtp':
+      return smtpTransport()
     case 'resend':
-      return localTransport()
+      return resendTransport()
     default:
-      throw new Error(`Unsupported provider: ${provider as string}`)
+      throw new Error(`Unsupported mail provider: ${String(provider)}`)
   }
 }
 
-// singleton instance of the mailer
 export const mailer = createMailer()

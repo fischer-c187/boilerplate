@@ -1,10 +1,19 @@
-export type SendEmailOptions = {
-  to: string
-  subject: string
-  html: string
+export type EmailAttachment = {
+  filename: string
+  content: string | Buffer
+  contentType?: string
 }
 
-export type Provider = 'resend'
+export type SendEmailOptions = {
+  from: string
+  to: string
+  subject: string
+  html?: string
+  text?: string
+  attachments?: EmailAttachment[]
+}
+
+export type Provider = 'smtp' | 'resend'
 
 export interface Mailer {
   sendEmail(options: SendEmailOptions): Promise<void>
