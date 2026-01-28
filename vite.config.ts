@@ -73,5 +73,30 @@ export default defineConfig(({ mode }) => ({
     port: 3000,
     host: true,
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['tests/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      all: true,
+      include: [
+        'src/server/middleware/auth.ts',
+        'src/server/services/stripe/validation.ts',
+        'src/server/services/stripe/checkout.service.ts',
+        'src/server/services/stripe/webhook.service.ts',
+        'src/server/adaptaters/mail/mailer.ts',
+        'src/server/adaptaters/mail/transports/smtp.ts',
+        'src/server/adaptaters/mail/transports/resend.ts',
+      ],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
+      },
+    },
+  },
   build: mode === 'client' ? clientBuild : ssrBuild,
 }))
