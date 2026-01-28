@@ -21,7 +21,11 @@ const serverEnvSchema = z.object({
   API_URL: z.string().url().optional(),
 
   // Mail
-  MAIL_PROVIDER: z.enum(['resend']).optional(),
+  MAIL_PROVIDER: z.enum(['smtp', 'resend']).optional(),
+  RESEND_API_KEY: z.string().optional(),
+  SMTP_HOST: z.string().default('localhost'),
+  SMTP_PORT: z.coerce.number().default(1025),
+  SMTP_FROM: z.string().default('dev@local.test'),
 
   // Stripe
   STRIPE_SECRET_KEY: z.string(),
