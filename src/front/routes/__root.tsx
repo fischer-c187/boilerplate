@@ -1,6 +1,7 @@
 import { Navigation } from '@/front/components/Navigation'
 import { Toaster } from '@/front/components/ui/sonner'
 import appCss from '@/front/index.css?url'
+import { buildSeoMeta } from '@/front/lib/seo'
 import type { RouterContext } from '@/front/router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
@@ -22,18 +23,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap',
       },
     ],
-    meta: [
-      {
-        title: 'Drsky - Ship your SaaS in days',
-      },
-      {
-        charSet: 'UTF-8',
-      },
-      {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1.0',
-      },
-    ],
+    meta: buildSeoMeta(),
     scripts: [
       ...(!import.meta.env.PROD
         ? [
