@@ -35,3 +35,6 @@ ticket.md
 # TanStack Router generated files
 .tanstack/
 **/routeTree.gen.ts
+
+# test coverage
+coverage/
