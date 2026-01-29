@@ -1,3 +1,7 @@
+import {
+  EMAIL_VERIFICATION_EXPIRES_IN_SECONDS,
+  sendEmailVerification,
+} from '@/server/services/auth/email-verification'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import db from '../db/postgres'
@@ -16,11 +20,19 @@ export const auth = betterAuth({
   session: {
     cookieCache: {
       enabled: true,
-      ttl: 60 * 60 * 24,
+      maxAge: 60 * 60 * 24,
     },
   },
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: false,
+    expiresIn: EMAIL_VERIFICATION_EXPIRES_IN_SECONDS,
+    sendVerificationEmail: sendEmailVerification,
   },
   basePath: '/api/auth',
 })

@@ -27,7 +27,7 @@ export function SignupForm() {
       if (result.error) {
         setError(result.error.message || 'Signup failed')
       } else {
-        await navigate({ to: '/dashboard' })
+        await navigate({ to: '/verify-email', search: { email } })
       }
     } catch (err) {
       setError('An error occurred during signup')
