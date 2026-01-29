@@ -1,16 +1,18 @@
-# TanStack Query SSR (guide court)
+# Feature: SSR
 
 ## But
 
-Integre TanStack Query au rendu SSR pour precharger les donnees, puis hydrater le cache cote client.
+Rendu serveur avec TanStack Router + TanStack Query, puis hydratation client.
 
 ## Ou ca vit
 
-- Router + QueryClient : `src/front/router.ts`
 - SSR : `src/front/entry-server.tsx`
-- Hydratation : `src/front/entry-client.tsx`
+- Hydratation client : `src/front/entry-client.tsx`
+- Router + QueryClient : `src/front/router.ts`
 
-## Usage (route)
+## Utilisation (routes)
+
+Pour les donnees critiques en SSR :
 
 1. Prefetch dans le loader avec `ensureQueryData`.
 2. Lire les donnees avec `useSuspenseQuery`.
@@ -35,4 +37,4 @@ export const Route = createFileRoute('/example')({
 ## Notes
 
 - L'integration SSR Query est faite via `setupRouterSsrQueryIntegration`.
-- Le cache est dehydrate cote serveur puis rehydrate cote client.
+- Guide detaille : `docs/TANSTACK_QUERY_SSR_GUIDE.md`.
