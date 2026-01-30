@@ -114,6 +114,7 @@ Flux SSR (resume) : loader -> prefetch query -> rendu HTML -> hydratation avec c
 - `docs/FEATURE_STRIPE.md` : checkout, portal, webhooks
 - `docs/FEATURE_SSR.md` : usage SSR + Query
 - `docs/TANSTACK_QUERY_SSR_GUIDE.md` : guide detaille SSR
+- `docs/API_CLIENT.md` : client RPC Hono + format des erreurs API
 
 ## Règles d'import
 
