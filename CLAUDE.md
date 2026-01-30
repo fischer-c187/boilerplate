@@ -1,21 +1,38 @@
-1. First think through the problem, read the codebase for relevant files, and write a plan to tasks/todo.md.
-2. The plan should have a list of todo items that you can check off as you complete them
-3. Before you begin working, check in with me and I will verify the plan.
-4. Then, begin working on the todo items, marking them as complete as you go.
-5. Please every step of the way just give me a high level explanation of what changes you made
-6. Make every task and code change you do as simple as possible. We want to avoid making any massive or complex changes. Every change should impact as little code as possible. Everything is about simplicity.
-7. Finally, add a review section to the todo.md file with a summary of the changes you made and any other relevant information.
-8. DO NOT BE LAZY. NEVER BE LAZY. IF THERE IS A BUG FIND THE ROOT CAUSE AND FIX IT. NO TEMPORARY FIXES. YOU ARE A SENIOR DEVELOPER. NEVER BE LAZY
-9. MAKE ALL FIXES AND CODE CHANGES AS SIMPLE AS HUMANLY POSSIBLE. THEY SHOULD ONLY IMPACT NECESSARY CODE RELEVANT TO THE TASK AND NOTHING ELSE. IT SHOULD IMPACT AS LITTLE CODE AS POSSIBLE. YOUR GOAL IS TO NOT INTRODUCE ANY BUGS. IT'S ALL ABOUT SIMPLICITY
-10. Code comments must be:
+# Project
 
-- Written in English
-- Short and technical
-- No redundant comments
-- Explain why, not what
+Hono + React SSR boilerplate using Vite, TanStack Router/Query, and TypeScript.
+Structure: `src/server` (Hono API + SSR), `src/front` (React SSR), `src/shared` (shared types/client).
+Database: Drizzle ORM with PostgreSQL.
 
-11. When generating or modifying code:
+## Commands
 
-- Write all comments in English only
-- Never write code comments in French
-- Explanations outside of code may be in any language
+- dev: `pnpm dev`
+- build: `pnpm build`
+- start: `pnpm start`
+- test: `pnpm test`
+- lint: `pnpm lint`
+- format: `pnpm format`
+- db: `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:reset`
+
+## Architecture rules
+
+- `src/server` must not import from `src/front`.
+- `src/front` must not import from `src/server`.
+- `src/shared` must not import from `src/server` or `src/front`.
+- Routes are file-based in `src/front/routes`.
+- DB schema lives in `src/server/adaptaters/db/schema/`; generate and migrate after schema changes.
+
+## Verification
+
+- After non-trivial changes, run `pnpm test`.
+- When touching TS/TSX or formatting, also run `pnpm lint` and `pnpm format:check`.
+
+## Common pitfalls
+
+- Violating server/front/shared import boundaries.
+- Forgetting `pnpm db:generate` and `pnpm db:migrate` after schema edits.
+- Running `pnpm start` without a fresh `pnpm build`.
+
+## Editing rules
+
+- Code comments must be in English, short, technical, and explain why (not what).
