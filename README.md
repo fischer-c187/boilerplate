@@ -1,40 +1,30 @@
 # Hono + React SSR Boilerplate
 
-Boilerplate fullstack moderne pour shipper rapidement avec Hono, React SSR (TanStack Router), et une architecture server/front/shared claire et scalable.
+Boilerplate fullstack moderne pour demarrer vite avec Hono, React SSR (TanStack Router) et une separation claire `server/front/shared`.
 
 ## Philosophy
 
-Ce boilerplate sépare clairement :
-
-- **Backend (server/)** : API Hono, database, middlewares (Node.js only)
-- **Frontend (front/)** : React SSR, routes, components (Browser + SSR)
-- **Shared (shared/)** : Code isomorphique - types, validation, business logic (partout)
-
-Cette séparation garantit :
-
-- **Type-safety end-to-end** avec Hono RPC
-- **Pas de code Node.js dans le bundle client**
-- **Réutilisation du code** entre server et client
-- **Scalabilité** avec une organisation par domaine métier
+- **Backend (src/server/)** : API Hono, services, DB, middleware (Node.js only)
+- **Frontend (src/front/)** : React SSR, routes, UI (browser + SSR)
+- **Shared (src/shared/)** : code partage (client RPC, i18n, types)
 
 ## Stack
 
 ### Core
 
-- **Backend** : Hono v4 (Node.js)
-- **Frontend** : React 18 avec SSR
+- **Backend** : Hono v4
+- **Frontend** : React 19 + SSR
 - **Routing** : TanStack Router (file-based)
-- **TypeScript** : Strict mode, ESM
-- **Type-safety** : Hono RPC client
+- **Data fetching** : TanStack Query
+- **TypeScript** : strict mode, ESM
 
-### Modules par défaut
+### Modules par defaut
 
 - **Database** : Drizzle ORM + PostgreSQL
-- **Auth** : Better Auth
+- **Auth** : Better Auth (email + password, verification)
 - **Payments** : Stripe
-- **Email** : Resend
-- **Validation** : Zod (schemas partagés)
-- **Analytics** : PostHog
+- **Email** : SMTP (dev) / Resend (prod)
+- **Validation** : Zod
 
 ## Quick Start
 
@@ -43,263 +33,105 @@ pnpm install
 pnpm dev
 ```
 
-Ouvre http://localhost:3000
+Ouvre `http://localhost:3000`.
 
 ## Commands
 
-### Development
+### Dev / Build
 
 ```bash
 pnpm dev      # Dev mode avec hot reload
-pnpm build    # Build pour production
+pnpm build    # Build client + server + types
 pnpm start    # Run production build
 ```
 
 ### Database
 
 ```bash
-# Démarrer PostgreSQL avec Docker
-pnpm db:up
-
-# Arrêter PostgreSQL
-pnpm db:down
-
-# Générer les migrations à partir des schémas
-pnpm db:generate
-
-# Appliquer les migrations sur la base de données
-pnpm db:migrate
-
-# Lancer Drizzle Studio (GUI pour explorer la DB)
-pnpm db:studio
+pnpm db:generate  # Generer les migrations
+pnpm db:migrate   # Appliquer les migrations
+pnpm db:studio    # UI Drizzle
+pnpm db:reset     # Reset DB (script)
 ```
 
-**Workflow de migration** :
+Workflow migrations :
 
-1. Créer/modifier un schéma dans `src/server/db/schema/`
-2. Générer la migration : `pnpm db:generate`
-3. Appliquer la migration : `pnpm db:migrate`
-4. Explorer avec Drizzle Studio : `pnpm db:studio`
+1. Modifier un schema dans `src/server/adaptaters/db/schema/`
+2. `pnpm db:generate`
+3. `pnpm db:migrate`
 
-### Environment Variables
+### Docker (Postgres + Mailpit)
 
-Ce boilerplate utilise **Zod** pour valider les variables d'environnement au démarrage. Cela garantit que l'application ne démarre pas avec une configuration invalide ou manquante.
-
-**Workflow pour ajouter une variable d'environnement :**
-
-1. Ajouter la variable dans `.env`
-2. Ajouter la validation dans le schema Zod correspondant :
-   - **Variable serveur** → `src/server/config/env.ts`
-   - **Variable client** → `src/front/config/env.client.ts`
-
-# Exemple : Ajouter une clé API Stripe
-
-# 1. Dans .env
-
-STRIPE_SECRET_KEY=sk_test_xxx
-
-# 2. Dans src/server/config/env.ts
-
-const serverEnvSchema = z.object({
-// ... existing vars ...
-STRIPE*SECRET_KEY: z.string().startsWith('sk*'),
-})**Variables client vs serveur :**
-
-| Type    | Préfixe | Fichier schema                   | Accessible depuis         |
-| ------- | ------- | -------------------------------- | ------------------------- |
-| Serveur | aucun   | `src/server/config/env.ts`       | `env.VAR_NAME`            |
-| Client  | `VITE_` | `src/front/config/env.client.ts` | `clientEnv.VITE_VAR_NAME` |
-
-> ⚠️ **Important** : Les variables client (préfixées `VITE_`) sont exposées dans le bundle JavaScript. Ne jamais y mettre de secrets !
-
-**Utilisation :**
-
-// Côté serveur
-import { env } from '@/server/config/env'
-console.log(env.DB_HOST)
-
-// Côté client
-import { clientEnv } from '@/front/config/env.client'
-console.log(clientEnv.VITE_APP_NAME)
-
+```bash
+pnpm docker:up
+pnpm docker:down
+pnpm docker:logs
 ```
 
-## Architecture
+### Stripe
 
+```bash
+pnpm stripe:listen   # Ecoute webhooks localement
+pnpm stripe:trigger  # Trigger de test
 ```
 
-src/
-server/ # Backend Hono (Node.js only)
-api/
-users.ts # API routes + handlers
-auth.ts
-payments.ts
-db/
-client.ts # Drizzle config
-schema/ # Table definitions
-users.ts
-payments.ts
-middlewares/
-auth.middleware.ts
-index.ts # Hono app entry
+### Qualite
 
-front/ # Frontend React (Browser + SSR)
-routes/ # TanStack Router routes
-\_\_root.tsx
-index.tsx
-users/
-profile.tsx
-components/
-ui/ # Design system
-users/ # User components
-payments/ # Payment components
-api/ # React Query hooks
-users.query.ts
-hooks/ # Custom hooks
-layouts/
-entry-server.tsx
-entry-client.tsx
-
-shared/ # Code isomorphique (SSR + Client)
-domain/ # Types + Validation
-users/
-user.types.ts # TypeScript interfaces
-user.schema.ts # Zod schemas
-payments/
-payment.types.ts
-payment.schema.ts
-
-    services/                # Business logic pure
-      users/
-        canAccessAdminPanel.ts
-        formatUserName.ts
-      payments/
-        calculateTax.ts
-
-    api-client/              # Hono RPC client (type-safe)
-      client.ts
-      users.api.ts
-      payments.api.ts
-
-    utils/
-    constants/
-
+```bash
+pnpm lint
+pnpm format
+pnpm test
 ```
+
+## Environment Variables
+
+Les variables sont validees par Zod :
+
+- Serveur : `src/server/config/env.ts`
+- Client : `src/front/config/env.client.ts`
+
+Variables courantes :
+
+- **Base URL** : `VITE_BASE_URL` (utilisee cote client, validee aussi cote server)
+- **DB** : `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- **Mail** : `MAIL_PROVIDER`, `SMTP_*` ou `RESEND_API_KEY`
+- **Stripe** : `STRIPE_SECRET_KEY`, `STRIPE_PUBLIC_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_API_VERSION`
+
+## Architecture & SSR
+
+- Serveur Hono : `src/server/index.ts` (monte `/api` + SSR)
+- API : `src/server/api.ts`
+- SSR : `src/front/entry-server.tsx`
+- Hydratation : `src/front/entry-client.tsx`
+- Router + QueryClient : `src/front/router.ts`
+
+Flux SSR (resume) : loader -> prefetch query -> rendu HTML -> hydratation avec cache.
+
+## Docs
+
+- `docs/ARCHITECTURE.md` : structure et flux SSR en bref
+- `docs/FEATURE_AUTH.md` : auth + verification email
+- `docs/FEATURE_STRIPE.md` : checkout, portal, webhooks
+- `docs/FEATURE_SSR.md` : usage SSR + Query
+- `docs/TANSTACK_QUERY_SSR_GUIDE.md` : guide detaille SSR
+- `docs/API_CLIENT.md` : client RPC Hono + format des erreurs API
 
 ## Règles d'import
 
 ```
+OK : src/server -> src/shared
+OK : src/front  -> src/shared
+OK : src/shared -> src/shared
 
-✅ Autorisé :
-server/ → shared/
-front/ → shared/
-shared/ → shared/
-
-❌ Interdit :
-server/ → front/ (backend ne peut pas importer React)
-front/ → server/ (frontend ne peut pas importer Node.js)
-shared/ → server/ (isomorphique ne peut pas dépendre de Node.js)
-shared/ → front/ (isomorphique ne peut pas dépendre de React)
-
-````
-
-## Workflow typique
-
-### 1. Définir le domaine (shared)
-
-```typescript
-// shared/domain/users/user.types.ts
-export interface User {
-  id: string
-  email: string
-  name: string
-}
-
-// shared/domain/users/user.schema.ts
-import { z } from 'zod'
-
-export const createUserSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2),
-})
-````
-
-### 2. Créer l'API backend (server)
-
-```typescript
-// server/api/users.ts
-import { Hono } from 'hono'
-import { zValidator } from '@hono/zod-validator'
-import { createUserSchema } from '@/shared/domain/users/user.schema'
-import { db } from '@/server/db/client'
-
-const app = new Hono()
-
-app.post('/', zValidator('json', createUserSchema), async (c) => {
-  const data = c.req.valid('json')
-  const user = await db.insert(users).values(data).returning()
-  return c.json(user)
-})
-
-export default app
+NO : src/server -> src/front
+NO : src/front  -> src/server
+NO : src/shared -> src/server | src/front
 ```
 
-### 3. Créer le client type-safe (shared)
+## Next steps
 
-```typescript
-// shared/api-client/users.api.ts
-import { client } from './client'
-
-export const usersApi = {
-  createUser: (data: CreateUserInput) => client.users.$post({ json: data }),
-}
-```
-
-### 4. Utiliser dans React (front)
-
-```typescript
-// front/api/users.query.ts
-import { usersApi } from '@/shared/api-client/users.api'
-import { useMutation } from '@tanstack/react-query'
-
-export const useCreateUser = () => {
-  return useMutation({
-    mutationFn: usersApi.createUser,
-  })
-}
-
-// front/components/users/CreateUserForm.tsx
-import { useCreateUser } from '@/front/api/users.query'
-
-export function CreateUserForm() {
-  const createUser = useCreateUser()
-  // ... form logic with full type-safety
-}
-```
-
-## Avantages de cette architecture
-
-1. **Type-safety complète** : Le type retourné par l'API server est automatiquement inféré côté client
-2. **Zod partagé** : Validation identique server + client
-3. **Business logic réutilisable** : `shared/services/` fonctionne partout
-4. **Pas de duplication** : Types définis une seule fois dans `shared/domain/`
-5. **Tree-shaking optimal** : Code server exclu du bundle client
-6. **Organisation claire** : Chaque domaine (users, payments) a ses types, schemas, et services
-
-## Deployment
-
-Le projet est prêt pour :
-
-- **Vercel** / **Netlify** (Node.js runtime)
-- **Railway** / **Render** (PostgreSQL included)
-- **Docker** (Dockerfile à ajouter si besoin)
-
-## Next Steps
-
-1. Définir vos domaines métier dans `shared/domain/`
-2. Créer vos API routes dans `server/api/`
-3. Configurer votre database dans `server/db/`
-4. Builder vos components React dans `front/components/`
-5. Ajouter vos routes dans `front/routes/`
-
-Pour plus de détails, voir [CLAUDE.md](CLAUDE.md).
+1. Ajouter vos routes API dans `src/server/api/`
+2. Etendre le client RPC dans `src/shared/api-client/`
+3. Ajouter vos hooks TanStack Query dans `src/front/api/`
+4. Builder vos features dans `src/front/features/`
+5. Ajouter vos routes dans `src/front/routes/`
